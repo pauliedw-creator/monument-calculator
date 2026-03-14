@@ -624,7 +624,7 @@ async function fetchAndRenderHistory(){
 
       const KEY_MAP = {
         'Timestamp':'_timestamp','Customer Name':'customerName','Category':'category',
-        'Sales Price (zł)':'salesPrice','Total Profit':'totalProfit',
+        'Sales Price (zł)':'salesPrice','Slab Cost (zł)':'slabCost','Total Profit':'totalProfit',
         'Profit Margin %':'profitMargin','MK Share':'mkShare','GLG Share':'glgShare',
         'Deposit (zł)':'deposit','To Be Collected':'toBeCollected'
       };
@@ -686,26 +686,24 @@ function renderHistoryRows(records, isCache){
   }
 
   const rows = records.map(d => {
-    // Timestamp: prefer _timestamp (from sheet) then _savedAt (local)
     const ts = d['_timestamp'] || d['_savedAt'] || '';
-    const savedAt = ts ? new Date(ts).toLocaleString('en-GB', {
-      day:'2-digit', month:'short', year:'numeric',
-      hour:'2-digit', minute:'2-digit', timeZone:'Europe/Warsaw'
+    const submittedDate = ts ? new Date(ts).toLocaleDateString('en-GB', {
+      day:'2-digit', month:'short', year:'numeric', timeZone:'Europe/Warsaw'
     }) : '—';
 
     const profit = typeof d.totalProfit === 'number' ? d.totalProfit : parseFloat(d.totalProfit) || 0;
     const profitClass = profit >= 0 ? 'profit-pos' : 'profit-neg';
     const cat = (d.category || '').replace(/Category [IVX]+ [—-] /,'');
+    const margin = typeof d.profitMargin === 'number' ? d.profitMargin : parseFloat(d.profitMargin) || 0;
 
     return `<tr>
-      <td class="muted" style="white-space:nowrap">${savedAt}</td>
+      <td class="muted" style="white-space:nowrap">${submittedDate}</td>
       <td>${escHtml(d.customerName || '—')}</td>
       <td class="muted">${escHtml(cat || '—')}</td>
       <td class="num">${fmtH(d.salesPrice)}</td>
+      <td class="num">${fmtH(d.slabCost)}</td>
       <td class="${profitClass}">${fmtH(profit)}</td>
-      <td class="num">${typeof d.profitMargin === 'number' ? d.profitMargin.toFixed(1)+'%' : (d.profitMargin||'—')}</td>
-      <td class="num">${fmtH(d.mkShare)}</td>
-      <td class="num">${fmtH(d.glgShare)}</td>
+      <td class="num">${margin.toFixed(1)}%</td>
     </tr>`;
   }).join('');
 
@@ -720,14 +718,13 @@ function renderHistoryRows(records, isCache){
     <div style="overflow-x:auto">
       <table class="history-table">
         <thead><tr>
-          <th>Submitted (CET)</th>
+          <th>Date</th>
           <th>Customer</th>
           <th>Category</th>
           <th style="text-align:right">Sales Price</th>
+          <th style="text-align:right">Slab Cost</th>
           <th style="text-align:right">Profit</th>
-          <th style="text-align:right">Margin</th>
-          <th style="text-align:right">MK Share</th>
-          <th style="text-align:right">GLG Share</th>
+          <th style="text-align:right">Margin %</th>
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>
