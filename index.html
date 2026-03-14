@@ -623,7 +623,7 @@ async function fetchAndRenderHistory(){
       (table.cols || []).forEach(function(c,i){ if(c.label) cols[c.label] = i; });
 
       const KEY_MAP = {
-        'Timestamp':'_timestamp','Customer Name':'customerName','Category':'category',
+        'Timestamp':'_timestamp','Customer Name':'customerName','Notes':'notes','Category':'category',
         'Sales Price (zł)':'salesPrice','Slab Cost (zł)':'slabCost','Total Profit':'totalProfit',
         'Profit Margin %':'profitMargin','MK Share':'mkShare','GLG Share':'glgShare',
         'Deposit (zł)':'deposit','To Be Collected':'toBeCollected'
@@ -698,7 +698,7 @@ function renderHistoryRows(records, isCache){
 
     return `<tr>
       <td class="muted" style="white-space:nowrap">${submittedDate}</td>
-      <td>${escHtml(d.customerName || '—')}</td>
+      <td>${escHtml(d.customerName || '—')}${d.notes ? '<br><span style="color:#aaa;font-size:11px;font-style:italic">'+escHtml(d.notes)+'</span>' : ''}</td>
       <td class="muted">${escHtml(cat || '—')}</td>
       <td class="num">${fmtH(d.salesPrice)}</td>
       <td class="num">${fmtH(d.slabCost)}</td>
@@ -719,7 +719,7 @@ function renderHistoryRows(records, isCache){
       <table class="history-table">
         <thead><tr>
           <th>Date</th>
-          <th>Customer</th>
+          <th>Customer / Notes</th>
           <th>Category</th>
           <th style="text-align:right">Sales Price</th>
           <th style="text-align:right">Slab Cost</th>
