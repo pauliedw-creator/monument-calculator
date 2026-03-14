@@ -604,18 +604,21 @@ function loadIntoForm(record) {
   document.getElementById('customerName').value = record.customerName || '';
   document.getElementById('notes').value = record.notes || '';
 
-  // Match category by text against current language options
+  // Match category by value — compare stored text against English labels
+  // (sheet always stores English text regardless of UI language)
   const sel = document.getElementById('category');
-  let matched = false;
   const stored = (record.category || '').trim();
-  for(let i = 0; i < sel.options.length; i++){
-    if(sel.options[i].text.trim() === stored){
-      sel.selectedIndex = i;
+  const catKeys = ['cat1','cat2','cat3','cat4','cat5','cat6'];
+  const catValues = ['3998|concrete','6021|concrete','6791|concrete','10837|granite','6791|concrete','10837|granite'];
+  let matched = false;
+  for(let i = 0; i < catKeys.length; i++){
+    if(T.EN[catKeys[i]].trim() === stored){
+      sel.value = catValues[i];
       matched = true;
       break;
     }
   }
-  if(matched) onCatChange(); // sets mk costs + finish bar
+  if(matched) onCatChange();
 
   // Override specific fields with stored values
   if(record.mkCosts !== '' && record.mkCosts != null)
@@ -671,9 +674,10 @@ document.getElementById('orderDate').value = new Date().toISOString().slice(0,10
 function getFormData(){
   const cat = document.getElementById('category');
   const catText = cat.options[cat.selectedIndex]?.text || '';
+  const name = document.getElementById('customerName').value;
   return {
     quoteDate:       document.getElementById('orderDate').value,
-    customerName:    document.getElementById('customerName').value,
+    customerName:    editMode ? name + ' (Updated)' : name,
     notes:           document.getElementById('notes').value,
     category:        catText,
     finish:          document.getElementById('finishBar').textContent,
