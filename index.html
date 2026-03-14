@@ -16,6 +16,20 @@ nav{background:#1a1a18;display:flex;align-items:center;gap:10px;padding:0 16px;h
 .nav-divider{width:1px;height:26px;background:#3a3830;margin:0 4px}
 .nav-brand{color:#c9a84c;font-size:13px;font-weight:500;letter-spacing:.03em;line-height:1.2}
 .nav-sub{color:#6a6050;font-size:10px;letter-spacing:.06em}
+.lang-toggle{margin-left:auto;display:flex;gap:4px}
+.lang-btn{font-family:'DM Sans',sans-serif;font-size:10px;font-weight:500;letter-spacing:.1em;
+  color:#6a6050;background:none;border:1px solid #3a3830;border-radius:3px;
+  padding:3px 9px;cursor:pointer;transition:all .15s}
+.lang-btn.active{color:#c9a84c;border-color:#c9a84c;background:rgba(201,168,76,.08)}
+.lang-btn:hover:not(.active){color:#aaa;border-color:#555}
+
+/* EDIT BANNER */
+.edit-banner{background:#fffbef;border-bottom:2px solid #c9a84c;padding:10px 20px;
+  display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#7a5c00}
+.cancel-edit-btn{font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;color:#7a5c00;background:none;border:1px solid #c9a84c;
+  border-radius:3px;padding:4px 10px;cursor:pointer;white-space:nowrap;margin-left:12px}
+.cancel-edit-btn:hover{background:#fef3db}
 
 /* STAT CARDS */
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px 16px 12px;max-width:1080px;margin:0 auto}
@@ -60,9 +74,7 @@ select{
 select option{background:#fff}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 input[readonly]{color:#bbb;background:#f3f1ee;cursor:default;border-color:#e0dbd3}
-
 .finish-bar{background:#fffbef;border:1px solid #e5d480;border-radius:3px;padding:8px 11px;font-size:11.5px;color:#9a7416;font-style:italic;margin-top:8px;display:none}
-
 .price-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;margin-top:22px}
 .price-header .field-label{margin:0}
 .price-tags{display:flex;align-items:center;gap:8px}
@@ -84,7 +96,7 @@ input.price-overridden:focus{border-color:#b8860b;background:#fff}
 .al{font-size:11px;color:#999;letter-spacing:.04em;font-weight:400}
 .av{font-size:12.5px;font-weight:500;color:#1a1a18}
 
-/* placeholder styling */
+/* placeholder */
 input::placeholder,textarea::placeholder{color:#bbb}
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
@@ -93,23 +105,21 @@ input[type=number]{-moz-appearance:textfield}
 /* HISTORY PANEL */
 .history-wrap{max-width:1080px;margin:0 auto 40px;padding:0 16px}
 .history-header{display:flex;align-items:center;justify-content:space-between;cursor:pointer;
-  background:#fff;border:1px solid #dbd6ce;border-radius:6px;padding:13px 18px;
-  transition:background .15s}
+  background:#fff;border:1px solid #dbd6ce;border-radius:6px;padding:13px 18px;transition:background .15s}
 .history-header:hover{background:#faf9f7}
 .history-title{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#999;font-weight:500;display:flex;align-items:center;gap:10px}
 .history-count{background:#f0ece6;color:#888;border-radius:20px;padding:2px 9px;font-size:9px;font-weight:500}
 .history-chevron{color:#bbb;font-size:14px;transition:transform .2s}
 .history-chevron.open{transform:rotate(180deg)}
-.history-body{display:none;border:1px solid #dbd6ce;border-top:none;border-radius:0 0 6px 6px;
-  background:#fff;overflow:hidden}
+.history-body{display:none;border:1px solid #dbd6ce;border-top:none;border-radius:0 0 6px 6px;background:#fff;overflow:hidden}
 .history-body.open{display:block}
 .history-table{width:100%;border-collapse:collapse;font-size:12px}
-.history-table th{
-  font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#c9a84c;
+.history-table th{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#c9a84c;
   background:#1a1a18;padding:9px 12px;text-align:left;font-weight:500;white-space:nowrap}
 .history-table td{padding:10px 12px;border-bottom:1px solid #f0ece6;vertical-align:top;color:#444}
 .history-table tr:last-child td{border-bottom:none}
-.history-table tr:hover td{background:#faf9f7}
+.history-row{cursor:pointer}
+.history-row:hover td{background:#fef8e8 !important}
 .history-table td.num{text-align:right;font-variant-numeric:tabular-nums;color:#1a1a18;font-weight:500}
 .history-table td.profit-pos{color:#2d7a4a;text-align:right;font-weight:500}
 .history-table td.profit-neg{color:#c0392b;text-align:right;font-weight:500}
@@ -124,47 +134,57 @@ input[type=number]{-moz-appearance:textfield}
   text-transform:uppercase;color:#c0392b;background:none;border:1px solid #f0b8b8;
   border-radius:3px;padding:5px 12px;cursor:pointer;transition:all .15s}
 .btn-clear-history:hover{background:#fde8e8}
+
 @media(max-width:700px){
   .history-table th:nth-child(n+5),.history-table td:nth-child(n+5){display:none}
   .stats{grid-template-columns:1fr 1fr}
   .body-wrap{grid-template-columns:1fr}
-  .body-wrap > div:last-child{order: 2} /* results column below inputs */
+  .body-wrap > div:last-child{order:2}
 }
 @media(max-width:400px){
   .stats{grid-template-columns:1fr}
   .stat-value{font-size:20px}
 }
-
 </style>
 </head>
 <body>
 
+<!-- EDIT BANNER -->
+<div id="editBanner" style="display:none" class="edit-banner">
+  <span>✏️ &nbsp;<strong data-i18n="editBannerText">Editing previous quote</strong> — <span data-i18n="editBannerSub">make changes and resubmit to save a new record</span></span>
+  <button class="cancel-edit-btn" onclick="cancelEdit()" data-i18n="cancelEdit">✕ Cancel</button>
+</div>
+
 <nav>
   <div class="nav-logo"><img id="navLogo" src="" alt="Golden Leaf Granit"></div>
   <div class="nav-divider"></div>
-  <div>
+  <div style="flex:1">
     <div class="nav-brand">Golden Leaf Granit</div>
-    <div class="nav-sub">Monument Calculator — Sp. z o.o</div>
+    <div class="nav-sub" data-i18n="navSub">Monument Calculator — Sp. z o.o</div>
+  </div>
+  <div class="lang-toggle">
+    <button id="btnEN" class="lang-btn active" onclick="setLang('EN')">EN</button>
+    <button id="btnPL" class="lang-btn" onclick="setLang('PL')">PL</button>
   </div>
 </nav>
 
 <div class="stats">
   <div class="stat-card">
-    <div class="stat-label">Sales Price</div>
+    <div class="stat-label" data-i18n="statSales">Sales Price</div>
     <div class="stat-value" id="sSales">— <span>zł</span></div>
-    <div><span class="stat-badge badge-override" id="overrideBadge" onclick="focusPrice()">Override</span></div>
+    <div><span class="stat-badge badge-override" id="overrideBadge" onclick="focusPrice()" data-i18n="override">Override</span></div>
   </div>
   <div class="stat-card">
-    <div class="stat-label">Total Profit</div>
+    <div class="stat-label" data-i18n="statProfit">Total Profit</div>
     <div class="stat-value" id="sProfit">— <span>zł</span></div>
     <div class="stat-badge badge-margin" id="sMargin"></div>
   </div>
   <div class="stat-card">
-    <div class="stat-label">MK Cost</div>
+    <div class="stat-label" data-i18n="statMk">MK Cost</div>
     <div class="stat-value" id="sMk">— <span>zł</span></div>
   </div>
   <div class="stat-card">
-    <div class="stat-label">MK Gross Margin</div>
+    <div class="stat-label" data-i18n="statMkGross">MK Gross Margin</div>
     <div class="stat-value" id="sMkGross">— <span>zł</span></div>
   </div>
 </div>
@@ -172,49 +192,48 @@ input[type=number]{-moz-appearance:textfield}
 <div class="body-wrap">
   <div>
     <div class="card">
-      <div class="card-title">Order Information</div>
+      <div class="card-title" data-i18n="cardOrder">Order Information</div>
       <div class="card-body">
-        <label class="field-label">Quote Date</label>
+        <label class="field-label" data-i18n="labelDate">Quote Date</label>
         <input type="date" id="orderDate">
-        <label class="field-label">Customer Name</label>
-        <input type="text" id="customerName" placeholder="Customer name">
-        <label class="field-label">Notes</label>
-        <textarea id="notes" placeholder="Pre-payment details, special instructions…"></textarea>
+        <label class="field-label" data-i18n="labelCustomer">Customer Name</label>
+        <input type="text" id="customerName" placeholder="Customer name" data-i18n-ph="phCustomer">
+        <label class="field-label" data-i18n="labelNotes">Notes</label>
+        <textarea id="notes" placeholder="Pre-payment details, special instructions…" data-i18n-ph="phNotes"></textarea>
       </div>
     </div>
 
     <div class="card">
-      <div class="card-title">Monument &amp; Costs</div>
+      <div class="card-title" data-i18n="cardMonument">Monument &amp; Costs</div>
       <div class="card-body">
-        <label class="field-label">Monument Category</label>
+        <label class="field-label" data-i18n="labelCategory">Monument Category</label>
         <select id="category" onchange="onCatChange()">
-          <option value="">— Select a category —</option>
-          <option value="3998|concrete">Category I — Small urn-type monument (60×120 cm)</option>
-          <option value="6021|concrete">Category II — Standard simple monument (120×250 cm, plate &amp; pillar)</option>
-          <option value="6791|concrete">Category III — Standard simple monument (120×250 cm, from ground on base)</option>
-          <option value="10837|granite">Category IV — Complex monument</option>
-          <option value="6791|concrete">Category V — Double simple monument (230×250 cm)</option>
-          <option value="10837|granite">Category VI — Double complex monument (230×250 cm)</option>
+          <option value="" data-i18n-opt="optSelect">— Select a category —</option>
+          <option value="3998|concrete" data-i18n-opt="cat1">Category I — Small urn-type monument (60×120 cm)</option>
+          <option value="6021|concrete" data-i18n-opt="cat2">Category II — Standard simple monument (120×250 cm, plate &amp; pillar)</option>
+          <option value="6791|concrete" data-i18n-opt="cat3">Category III — Standard simple monument (120×250 cm, from ground on base)</option>
+          <option value="10837|granite" data-i18n-opt="cat4">Category IV — Complex monument</option>
+          <option value="6791|concrete" data-i18n-opt="cat5">Category V — Double simple monument (230×250 cm)</option>
+          <option value="10837|granite" data-i18n-opt="cat6">Category VI — Double complex monument (230×250 cm)</option>
         </select>
         <div class="finish-bar" id="finishBar"></div>
-
         <div class="two-col" style="margin-top:22px">
           <div>
-            <label class="field-label">MK Costs (zł)</label>
-            <input type="number" id="mkCosts" placeholder="Auto from category" oninput="calculate()">
+            <label class="field-label" data-i18n="labelMkCosts">MK Costs (zł)</label>
+            <input type="number" id="mkCosts" placeholder="Auto from category" data-i18n-ph="phMkCosts" oninput="calculate()">
           </div>
           <div>
-            <label class="field-label">GLG CoS — Fixed</label>
+            <label class="field-label" data-i18n="labelGlgCos">GLG CoS — Fixed</label>
             <input type="number" id="glgCos" value="200" readonly>
           </div>
         </div>
         <div class="two-col" style="margin-top:22px">
           <div>
-            <label class="field-label">Slab Cost (zł)</label>
+            <label class="field-label" data-i18n="labelSlab">Slab Cost (zł)</label>
             <input type="number" id="slabCost" placeholder="0" oninput="calculate()">
           </div>
           <div>
-            <label class="field-label">Additional Costs (zł)</label>
+            <label class="field-label" data-i18n="labelAdd">Additional Costs (zł)</label>
             <input type="number" id="addCosts" placeholder="0" oninput="calculate()">
           </div>
         </div>
@@ -222,18 +241,18 @@ input[type=number]{-moz-appearance:textfield}
     </div>
 
     <div class="card">
-      <div class="card-title">Pricing</div>
+      <div class="card-title" data-i18n="cardPricing">Pricing</div>
       <div class="card-body">
         <div class="price-header">
-          <label class="field-label">Sales Price (zł)</label>
+          <label class="field-label" data-i18n="labelSalesPrice">Sales Price (zł)</label>
           <div class="price-tags">
-            <span class="override-badge" id="overrideTag">Override</span>
-            <button class="reset-btn" id="resetBtn" onclick="resetPrice()">↺ Reset</button>
+            <span class="override-badge" id="overrideTag" data-i18n="override">Override</span>
+            <button class="reset-btn" id="resetBtn" onclick="resetPrice()" data-i18n="reset">↺ Reset</button>
           </div>
         </div>
-        <input type="number" id="salesPrice" class="price-input" placeholder="Auto-calculated" oninput="onPriceInput()">
+        <input type="number" id="salesPrice" class="price-input" placeholder="Auto-calculated" data-i18n-ph="phSalesPrice" oninput="onPriceInput()">
         <div class="suggested-note" id="suggestedNote"></div>
-        <label class="field-label">Deposit Taken (zł)</label>
+        <label class="field-label" data-i18n="labelDeposit">Deposit Taken (zł)</label>
         <input type="number" id="deposit" placeholder="0" oninput="calculate()">
       </div>
     </div>
@@ -241,30 +260,29 @@ input[type=number]{-moz-appearance:textfield}
 
   <div>
     <div class="card">
-      <div class="card-title">Breakdown</div>
+      <div class="card-title" data-i18n="cardBreakdown">Breakdown</div>
       <div class="card-body" style="padding-top:8px">
-        <div class="breakdown-row"><span class="bl">MK Share</span><span class="bv" id="bMk">—</span></div>
-        <div class="breakdown-row"><span class="bl">GLG Share</span><span class="bv" id="bGlg">—</span></div>
-        <div class="breakdown-row"><span class="bl">To Be Collected</span><span class="bv" id="bCollect">—</span></div>
+        <div class="breakdown-row"><span class="bl" data-i18n="bMkShare">MK Share</span><span class="bv" id="bMk">—</span></div>
+        <div class="breakdown-row"><span class="bl" data-i18n="bGlgShare">GLG Share</span><span class="bv" id="bGlg">—</span></div>
+        <div class="breakdown-row"><span class="bl" data-i18n="lblCollect">To Be Collected</span><span class="bv" id="bCollect">—</span></div>
       </div>
     </div>
     <div class="card">
-      <div class="card-title">GLG Analytics</div>
+      <div class="card-title" data-i18n="cardAnalytics">GLG Analytics</div>
       <div class="card-body" style="padding-top:8px">
-        <div class="analytics-row"><span class="al">GLG CoS</span><span class="av" id="aGlgCos">—</span></div>
-        <div class="analytics-row"><span class="al">GLG CoS %</span><span class="av" id="aGlgPct">—</span></div>
-        <div class="analytics-row"><span class="al">GLG Gross Margin</span><span class="av" id="aGlgMargin">—</span></div>
-        <div class="analytics-row"><span class="al">MK Gross Margin</span><span class="av" id="aMkMargin">—</span></div>
+        <div class="analytics-row"><span class="al" data-i18n="aGlgCos">GLG CoS</span><span class="av" id="aGlgCos">—</span></div>
+        <div class="analytics-row"><span class="al" data-i18n="aGlgPct">GLG CoS %</span><span class="av" id="aGlgPct">—</span></div>
+        <div class="analytics-row"><span class="al" data-i18n="aGlgMargin">GLG Gross Margin</span><span class="av" id="aGlgMargin">—</span></div>
+        <div class="analytics-row"><span class="al" data-i18n="aMkMargin">MK Gross Margin</span><span class="av" id="aMkMargin">—</span></div>
       </div>
     </div>
-
     <div class="card">
-      <div class="card-title">Save to Google Sheet</div>
+      <div class="card-title" data-i18n="cardSave">Save to Google Sheet</div>
       <div class="card-body">
         <input type="hidden" id="sheetId" value="18Pm5tdTf40mVA37bbWGRuqk3gC4DYF16nXAWID6f-L0">
         <input type="hidden" id="scriptUrl" value="https://script.google.com/macros/s/AKfycbwlPVHeEhC7IR6iISjcPhwpZPp1dPI8znhsGu-VhKir2_7E2i2ghyx7-aeJXTKUCP9ioA/exec">
         <div style="font-size:10px;color:#aaa;margin-bottom:14px;line-height:1.5">
-          Connected to GLG Google Sheet. <span style="color:#3a8a5a">● Active</span>
+          <span data-i18n="connected">Connected to GLG Google Sheet.</span> <span style="color:#3a8a5a">● Active</span>
         </div>
         <button id="submitBtn" onclick="submitToSheet()" style="
           width:100%;padding:11px;border:none;border-radius:4px;
@@ -272,7 +290,7 @@ input[type=number]{-moz-appearance:textfield}
           font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;
           letter-spacing:.08em;cursor:pointer;transition:filter .15s;
         " onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter=''">
-          ✓ &nbsp;Accept &amp; Submit
+          <span id="submitBtnLabel" data-i18n="submitBtn">✓  Accept &amp; Submit</span>
         </button>
         <div id="submitStatus" style="margin-top:10px;font-size:11px;min-height:16px;border-radius:3px;padding:0"></div>
       </div>
@@ -284,37 +302,144 @@ input[type=number]{-moz-appearance:textfield}
 <div class="history-wrap">
   <div class="history-header" onclick="toggleHistory()">
     <div class="history-title">
-      Submission History
-      <span class="history-count" id="historyCount">0</span>
+      <span data-i18n="historyTitle">Submission History</span>
+      <span class="history-count" id="historyCount">—</span>
     </div>
     <span class="history-chevron" id="historyChevron">▾</span>
   </div>
   <div class="history-body" id="historyBody">
     <div id="historyContent"></div>
     <div class="history-actions">
-      <button class="btn-refresh-history" onclick="fetchAndRenderHistory()">↻ Refresh</button>
-      <button class="btn-clear-history" onclick="clearHistory()">Clear local cache</button>
+      <button class="btn-refresh-history" onclick="fetchAndRenderHistory()" data-i18n="refresh">↻ Refresh</button>
+      <button class="btn-clear-history" onclick="clearHistory()" data-i18n="clearCache">Clear local cache</button>
     </div>
   </div>
 </div>
 
 <script>
-// Embed logo as base64
+// ── Logo ──────────────────────────────────────────────────────
 document.getElementById('navLogo').src = 'data:image/png;base64,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';
 
-const FINISH = {
-  concrete:'Concrete paving slab or concrete block with concrete kerb',
-  granite:'Granite paths with granite kerb'
+// ── Translations ──────────────────────────────────────────────
+const T = {
+  EN: {
+    navSub:'Monument Calculator — Sp. z o.o',
+    statSales:'Sales Price', statProfit:'Total Profit', statMk:'MK Cost', statMkGross:'MK Gross Margin',
+    cardOrder:'Order Information', labelDate:'Quote Date', labelCustomer:'Customer Name', labelNotes:'Notes',
+    phCustomer:'Customer name', phNotes:'Pre-payment details, special instructions…',
+    cardMonument:'Monument & Costs', labelCategory:'Monument Category',
+    optSelect:'— Select a category —',
+    cat1:'Category I — Small urn-type monument (60×120 cm)',
+    cat2:'Category II — Standard simple monument (120×250 cm, plate & pillar)',
+    cat3:'Category III — Standard simple monument (120×250 cm, from ground on base)',
+    cat4:'Category IV — Complex monument',
+    cat5:'Category V — Double simple monument (230×250 cm)',
+    cat6:'Category VI — Double complex monument (230×250 cm)',
+    labelMkCosts:'MK Costs (zł)', phMkCosts:'Auto from category', labelGlgCos:'GLG CoS — Fixed',
+    labelSlab:'Slab Cost (zł)', labelAdd:'Additional Costs (zł)',
+    cardPricing:'Pricing', labelSalesPrice:'Sales Price (zł)', override:'Override',
+    reset:'↺ Reset', phSalesPrice:'Auto-calculated', labelDeposit:'Deposit Taken (zł)',
+    cardBreakdown:'Breakdown', bMkShare:'MK Share', bGlgShare:'GLG Share', lblCollect:'To Be Collected',
+    cardAnalytics:'GLG Analytics', aGlgCos:'GLG CoS', aGlgPct:'GLG CoS %',
+    aGlgMargin:'GLG Gross Margin', aMkMargin:'MK Gross Margin',
+    cardSave:'Save to Google Sheet', connected:'Connected to GLG Google Sheet.',
+    submitBtn:'✓  Accept & Submit', submitBtnEdit:'✓  Update & Resubmit',
+    historyTitle:'Submission History', refresh:'↻ Refresh', clearCache:'Clear local cache',
+    marginSuffix:'% margin', suggestedPrefix:'Suggested: ',
+    editBannerText:'Editing previous quote', editBannerSub:'make changes and resubmit to save a new record',
+    cancelEdit:'✕ Cancel',
+    finishConcrete:'Finish: Concrete paving slab or concrete block with concrete kerb',
+    finishGranite:'Finish: Granite paths with granite kerb',
+    hdrDate:'Date', hdrCustomer:'Customer / Notes', hdrCategory:'Category',
+    hdrSales:'Sales Price', hdrSlab:'Slab Cost', hdrProfit:'Profit', hdrMargin:'Margin %',
+    noRecords:'No submissions yet — records will appear here after you click Accept & Submit.',
+    loading:'⟳ Loading from Google Sheets…',
+    loadTitle:'Click to load into form for editing',
+  },
+  PL: {
+    navSub:'Kalkulator Nagrobków — Sp. z o.o',
+    statSales:'Cena sprzedaży', statProfit:'Zysk całkowity', statMk:'Koszty MK', statMkGross:'Marża brutto MK',
+    cardOrder:'Dane zamówienia', labelDate:'Data wyceny', labelCustomer:'Nazwa klienta', labelNotes:'Uwagi',
+    phCustomer:'Nazwa klienta', phNotes:'Szczegóły przedpłaty, specjalne instrukcje…',
+    cardMonument:'Nagrobek i koszty', labelCategory:'Kategoria nagrobka',
+    optSelect:'— Wybierz kategorię —',
+    cat1:'Kategoria I — Pomnik małej urny (60×120 cm)',
+    cat2:'Kategoria II — Standardowy nagrobek prosty (120×250 cm, płyta i filar)',
+    cat3:'Kategoria III — Standardowy nagrobek prosty (120×250 cm, na podstawie)',
+    cat4:'Kategoria IV — Nagrobek złożony',
+    cat5:'Kategoria V — Podwójny nagrobek prosty (230×250 cm)',
+    cat6:'Kategoria VI — Podwójny nagrobek złożony (230×250 cm)',
+    labelMkCosts:'Koszty MK (zł)', phMkCosts:'Auto z kategorii', labelGlgCos:'GLG KWS — Stały',
+    labelSlab:'Koszt płyty (zł)', labelAdd:'Koszty dodatkowe (zł)',
+    cardPricing:'Wycena', labelSalesPrice:'Cena sprzedaży (zł)', override:'Ręczna',
+    reset:'↺ Resetuj', phSalesPrice:'Obliczane automatycznie', labelDeposit:'Zaliczka (zł)',
+    cardBreakdown:'Podział', bMkShare:'Udział MK', bGlgShare:'Udział GLG', lblCollect:'Do pobrania',
+    cardAnalytics:'Analityka GLG', aGlgCos:'GLG KWS', aGlgPct:'GLG KWS %',
+    aGlgMargin:'Marża brutto GLG', aMkMargin:'Marża brutto MK',
+    cardSave:'Zapisz do Arkusza Google', connected:'Połączono z arkuszem GLG.',
+    submitBtn:'✓  Akceptuj i wyślij', submitBtnEdit:'✓  Aktualizuj i wyślij',
+    historyTitle:'Historia zgłoszeń', refresh:'↻ Odśwież', clearCache:'Wyczyść pamięć',
+    marginSuffix:'% marży', suggestedPrefix:'Sugerowana: ',
+    editBannerText:'Edycja poprzedniej wyceny', editBannerSub:'wprowadź zmiany i wyślij ponownie',
+    cancelEdit:'✕ Anuluj',
+    finishConcrete:'Wykończenie: Płyta betonowa lub blok betonowy z obrzeżem betonowym',
+    finishGranite:'Wykończenie: Ścieżki granitowe z obrzeżem granitowym',
+    hdrDate:'Data', hdrCustomer:'Klient / Uwagi', hdrCategory:'Kategoria',
+    hdrSales:'Cena sprzedaży', hdrSlab:'Koszt płyty', hdrProfit:'Zysk', hdrMargin:'Marża %',
+    noRecords:'Brak zgłoszeń — rekordy pojawią się po kliknięciu Akceptuj i wyślij.',
+    loading:'⟳ Ładowanie z Google Sheets…',
+    loadTitle:'Kliknij, aby załadować do formularza',
+  }
 };
 
+let currentLang = 'EN';
+
+function setLang(lang) {
+  currentLang = lang;
+  document.getElementById('btnEN').classList.toggle('active', lang === 'EN');
+  document.getElementById('btnPL').classList.toggle('active', lang === 'PL');
+  document.documentElement.lang = lang === 'PL' ? 'pl' : 'en';
+
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.getAttribute('data-i18n');
+    if (T[lang][k] !== undefined) el.textContent = T[lang][k];
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    const k = el.getAttribute('data-i18n-ph');
+    if (T[lang][k] !== undefined) el.placeholder = T[lang][k];
+  });
+  document.querySelectorAll('[data-i18n-opt]').forEach(el => {
+    const k = el.getAttribute('data-i18n-opt');
+    if (T[lang][k] !== undefined) el.textContent = T[lang][k];
+  });
+
+  // Update finish bar if visible
+  const fb = document.getElementById('finishBar');
+  if (fb.style.display !== 'none' && fb.dataset.finType) {
+    fb.textContent = T[lang]['finish' + fb.dataset.finType];
+  }
+
+  // Submit button label — respects edit mode
+  document.getElementById('submitBtnLabel').textContent =
+    editMode ? T[lang].submitBtnEdit : T[lang].submitBtn;
+
+  // Re-render history table headers if open
+  if (window._historyRecords && document.getElementById('historyBody').classList.contains('open')) {
+    renderHistoryRows(window._historyRecords, false);
+  }
+
+  try { localStorage.setItem('glg_lang', lang); } catch(e) {}
+}
+
+// ── Calculator core ───────────────────────────────────────────
 let priceOverridden = false;
-let priceTouched = false;  // true once user has manually typed in the price field
+let priceTouched = false;
 
 function v(id){ return parseFloat(document.getElementById(id).value) || 0; }
 
 function fmt(n){
   const isWhole = Math.abs(n - Math.round(n)) < 0.005;
-  return n.toLocaleString('en-GB', {
+  return n.toLocaleString('en-GB',{
     minimumFractionDigits: isWhole ? 0 : 2,
     maximumFractionDigits: isWhole ? 0 : 2
   }) + ' zł';
@@ -328,12 +453,12 @@ function getSuggested(){
   const mk=v('mkCosts'), glg=v('glgCos'), slab=v('slabCost'), add=v('addCosts');
   const cost = mk + glg + slab + add;
   if(cost === 0) return null;
-  return Math.round(cost / 0.63); // ~37% margin target
+  return Math.round(cost / 0.63);
 }
 
 function onCatChange(){
   const sel = document.getElementById('category');
-  if(!sel.value){ 
+  if(!sel.value){
     document.getElementById('mkCosts').value = '';
     document.getElementById('finishBar').style.display = 'none';
     document.getElementById('resetBtn').style.display = 'none';
@@ -342,9 +467,10 @@ function onCatChange(){
   const [mk, fin] = sel.value.split('|');
   document.getElementById('mkCosts').value = mk;
   const fb = document.getElementById('finishBar');
-  fb.textContent = 'Finish: ' + FINISH[fin];
+  const finKey = fin.charAt(0).toUpperCase() + fin.slice(1); // 'Concrete' or 'Granite'
+  fb.dataset.finType = finKey;
+  fb.textContent = T[currentLang]['finish' + finKey];
   fb.style.display = 'block';
-  // Auto-fill price on category change only if user hasn't manually touched the price field
   if(!priceTouched){
     const s = getSuggested();
     document.getElementById('salesPrice').value = s !== null ? s : '';
@@ -355,11 +481,9 @@ function onCatChange(){
 }
 
 function onPriceInput(){
-  // Any manual interaction marks the field as touched — stops auto-refill
   priceTouched = true;
   const el = document.getElementById('salesPrice');
   const suggested = getSuggested();
-  // If user types back the suggested value exactly, treat as not overridden
   if(suggested !== null && el.value !== '' && Math.abs(parseFloat(el.value) - suggested) < 1){
     priceOverridden = false;
   } else {
@@ -409,10 +533,8 @@ function calculate(){
   const dep  = v('deposit');
   const suggested = getSuggested();
 
-  // Auto-update price only if not touched by user AND cost inputs changed
   if(!priceTouched && suggested !== null){
-    const el = document.getElementById('salesPrice');
-    el.value = suggested;
+    document.getElementById('salesPrice').value = suggested;
   }
 
   const sale = v('salesPrice');
@@ -421,45 +543,38 @@ function calculate(){
   const totalCost = mk + glg + slab + add;
   const profit    = sale - totalCost;
   const margin    = sale > 0 ? profit / sale * 100 : 0;
-  const mkShare   = mk  + profit / 2;
+  const mkShare   = mk + profit / 2;
   const glgShare  = glg + slab + add + profit / 2;
   const collect   = sale - dep;
-  // GLG Analytics
   const glgCos    = mkShare + slab + add;
   const glgCosPct = sale > 0 ? glgCos / sale * 100 : 0;
   const glgGross  = sale - glgCos;
   const mkGross   = mkShare - mk;
 
-  // Store raw numbers for clean export to Google Sheets
   window._calc = { totalProfit: profit, margin: parseFloat(margin.toFixed(2)),
     mkShare, glgShare, collect, glgCos, glgCosPct: parseFloat(glgCosPct.toFixed(2)),
     glgGross, mkGross };
 
-  // stat cards
   document.getElementById('sSales').innerHTML = fmtCard(sale);
   const profitEl = document.getElementById('sProfit');
   profitEl.innerHTML = fmtCard(profit);
   profitEl.className = 'stat-value ' + (profit >= 0 ? 'green' : 'red');
-  document.getElementById('sMargin').textContent = margin.toFixed(1) + '% margin';
+  document.getElementById('sMargin').textContent = margin.toFixed(1) + T[currentLang].marginSuffix;
   document.getElementById('sMk').innerHTML = fmtCard(mk);
   document.getElementById('sMkGross').innerHTML = fmtCard(mkGross);
 
-  // breakdown
   document.getElementById('bMk').textContent = fmt(mkShare);
   document.getElementById('bGlg').textContent = fmt(glgShare);
   document.getElementById('bCollect').textContent = fmt(collect);
 
-  // analytics
   document.getElementById('aGlgCos').textContent = fmt(glgCos);
   document.getElementById('aGlgPct').textContent = glgCosPct.toFixed(1) + '%';
   document.getElementById('aGlgMargin').textContent = fmt(glgGross);
   document.getElementById('aMkMargin').textContent = fmt(mkGross);
 
-  // suggested note
   if(suggested !== null){
     document.getElementById('suggestedNote').textContent = priceOverridden
-      ? 'Suggested: ' + fmt(suggested)
-      : '';
+      ? T[currentLang].suggestedPrefix + fmt(suggested) : '';
   } else {
     document.getElementById('suggestedNote').textContent = '';
   }
@@ -475,84 +590,150 @@ function clearResults(){
   });
 }
 
-// Init
+// ── Edit from history ─────────────────────────────────────────
+let editMode = false;
+
+function loadIntoForm(record) {
+  // Date — extract from ISO timestamp
+  if(record._timestamp){
+    try {
+      document.getElementById('orderDate').value = new Date(record._timestamp).toISOString().slice(0,10);
+    } catch(e) {}
+  }
+
+  document.getElementById('customerName').value = record.customerName || '';
+  document.getElementById('notes').value = record.notes || '';
+
+  // Match category by text against current language options
+  const sel = document.getElementById('category');
+  let matched = false;
+  const stored = (record.category || '').trim();
+  for(let i = 0; i < sel.options.length; i++){
+    if(sel.options[i].text.trim() === stored){
+      sel.selectedIndex = i;
+      matched = true;
+      break;
+    }
+  }
+  if(matched) onCatChange(); // sets mk costs + finish bar
+
+  // Override specific fields with stored values
+  if(record.mkCosts !== '' && record.mkCosts != null)
+    document.getElementById('mkCosts').value = record.mkCosts;
+  if(record.slabCost !== '' && record.slabCost != null)
+    document.getElementById('slabCost').value = record.slabCost;
+  if(record.additionalCosts !== '' && record.additionalCosts != null)
+    document.getElementById('addCosts').value = record.additionalCosts;
+  if(record.deposit !== '' && record.deposit != null)
+    document.getElementById('deposit').value = record.deposit;
+
+  // Sales price
+  priceTouched = true;
+  priceOverridden = true;
+  if(record.salesPrice !== '' && record.salesPrice != null)
+    document.getElementById('salesPrice').value = record.salesPrice;
+
+  calculate();
+  updateOverrideUI();
+
+  // Show edit mode
+  editMode = true;
+  document.getElementById('editBanner').style.display = 'flex';
+  document.getElementById('submitBtnLabel').textContent = T[currentLang].submitBtnEdit;
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function cancelEdit(){
+  editMode = false;
+  document.getElementById('editBanner').style.display = 'none';
+  document.getElementById('submitBtnLabel').textContent = T[currentLang].submitBtn;
+  // Reset form
+  document.getElementById('category').value = '';
+  document.getElementById('customerName').value = '';
+  document.getElementById('notes').value = '';
+  document.getElementById('mkCosts').value = '';
+  document.getElementById('slabCost').value = '';
+  document.getElementById('addCosts').value = '';
+  document.getElementById('salesPrice').value = '';
+  document.getElementById('deposit').value = '';
+  document.getElementById('orderDate').value = new Date().toISOString().slice(0,10);
+  document.getElementById('finishBar').style.display = 'none';
+  priceTouched = false;
+  priceOverridden = false;
+  updateOverrideUI();
+  clearResults();
+}
+
+// ── Init ──────────────────────────────────────────────────────
 document.getElementById('orderDate').value = new Date().toISOString().slice(0,10);
 
 function getFormData(){
   const cat = document.getElementById('category');
   const catText = cat.options[cat.selectedIndex]?.text || '';
-  // Grab raw computed numbers directly from the last calculate() run
   return {
-    quoteDate:        document.getElementById('orderDate').value,
-    customerName:     document.getElementById('customerName').value,
-    notes:            document.getElementById('notes').value,
-    category:         catText,
-    finish:           document.getElementById('finishBar').textContent.replace('Finish: ',''),
-    // Raw input numbers
-    mkCosts:          document.getElementById('mkCosts').value,
-    glgCos:           document.getElementById('glgCos').value,
-    slabCost:         document.getElementById('slabCost').value,
-    additionalCosts:  document.getElementById('addCosts').value,
-    salesPrice:       document.getElementById('salesPrice').value,
-    deposit:          document.getElementById('deposit').value,
-    // Raw calculated numbers (stored on window by calculate())
-    totalProfit:      window._calc.totalProfit,
-    profitMargin:     window._calc.margin,
-    mkShare:          window._calc.mkShare,
-    glgShare:         window._calc.glgShare,
-    toBeCollected:    window._calc.collect,
-    glgCosAnalytic:   window._calc.glgCos,
-    glgCosPct:        window._calc.glgCosPct,
-    glgGrossMargin:   window._calc.glgGross,
-    mkGrossMargin:    window._calc.mkGross,
+    quoteDate:       document.getElementById('orderDate').value,
+    customerName:    document.getElementById('customerName').value,
+    notes:           document.getElementById('notes').value,
+    category:        catText,
+    finish:          document.getElementById('finishBar').textContent,
+    mkCosts:         document.getElementById('mkCosts').value,
+    glgCos:          document.getElementById('glgCos').value,
+    slabCost:        document.getElementById('slabCost').value,
+    additionalCosts: document.getElementById('addCosts').value,
+    salesPrice:      document.getElementById('salesPrice').value,
+    deposit:         document.getElementById('deposit').value,
+    totalProfit:     window._calc.totalProfit,
+    profitMargin:    window._calc.margin,
+    mkShare:         window._calc.mkShare,
+    glgShare:        window._calc.glgShare,
+    toBeCollected:   window._calc.collect,
+    glgCosAnalytic:  window._calc.glgCos,
+    glgCosPct:       window._calc.glgCosPct,
+    glgGrossMargin:  window._calc.glgGross,
+    mkGrossMargin:   window._calc.mkGross,
   };
 }
 
 async function submitToSheet(){
   const url = document.getElementById('scriptUrl').value.trim();
   const btn = document.getElementById('submitBtn');
-
   if(!document.getElementById('salesPrice').value || !window._calc){
-    setStatus('error','⚠ Please complete the calculator before submitting.');
+    setStatus('error','⚠ ' + (currentLang === 'PL' ? 'Uzupełnij kalkulator przed wysłaniem.' : 'Please complete the calculator before submitting.'));
     return;
   }
-
   btn.disabled = true;
-  btn.textContent = 'Submitting…';
-  setStatus('info','Sending to Google Sheets…');
-
+  document.getElementById('submitBtnLabel').textContent = currentLang === 'PL' ? 'Wysyłanie…' : 'Submitting…';
+  setStatus('info', currentLang === 'PL' ? 'Wysyłanie do Google Sheets…' : 'Sending to Google Sheets…');
   try {
     const data = getFormData();
     await iframePost(url, data);
-    setStatus('success','✓ Record saved to Google Sheet successfully.');
+    setStatus('success', currentLang === 'PL' ? '✓ Rekord zapisany pomyślnie.' : '✓ Record saved to Google Sheet successfully.');
     saveToHistory(data);
+    if(editMode){
+      editMode = false;
+      document.getElementById('editBanner').style.display = 'none';
+    }
   } catch(e) {
-    setStatus('error','✗ Network error: ' + e.message);
+    setStatus('error', '✗ ' + e.message);
   }
-
   btn.disabled = false;
-  btn.textContent = '✓  Accept & Submit';
+  document.getElementById('submitBtnLabel').textContent = T[currentLang].submitBtn;
 }
 
-// Hidden iframe form POST — immune to CORS/redirect body-loss that breaks fetch()
 function iframePost(url, data) {
   return new Promise(function(resolve) {
     let iframe = document.getElementById('_submitFrame');
-    if (!iframe) {
+    if(!iframe){
       iframe = document.createElement('iframe');
-      iframe.id = '_submitFrame';
-      iframe.name = '_submitFrame';
+      iframe.id = '_submitFrame'; iframe.name = '_submitFrame';
       iframe.style.display = 'none';
       document.body.appendChild(iframe);
     }
     const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = url;
-    form.target = '_submitFrame';
+    form.method = 'POST'; form.action = url; form.target = '_submitFrame';
     const input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = 'payload';
-    input.value = JSON.stringify(data);
+    input.type = 'hidden'; input.name = 'payload'; input.value = JSON.stringify(data);
     form.appendChild(input);
     document.body.appendChild(form);
     iframe.onload = function(){ try{ document.body.removeChild(form); }catch(e){} resolve(); };
@@ -564,19 +745,15 @@ function iframePost(url, data) {
 function setStatus(type, msg){
   const el = document.getElementById('submitStatus');
   const styles = {
-    success: 'background:#e8f7ee;color:#2d7a4a;padding:8px 10px;border:1px solid #b8e4c8',
-    error:   'background:#fde8e8;color:#c0392b;padding:8px 10px;border:1px solid #f0b8b8',
-    info:    'background:#f0f4ff;color:#4a6abf;padding:8px 10px;border:1px solid #c0ccf0',
+    success:'background:#e8f7ee;color:#2d7a4a;padding:8px 10px;border:1px solid #b8e4c8',
+    error:  'background:#fde8e8;color:#c0392b;padding:8px 10px;border:1px solid #f0b8b8',
+    info:   'background:#f0f4ff;color:#4a6abf;padding:8px 10px;border:1px solid #c0ccf0',
   };
   el.style.cssText = styles[type] + ';border-radius:3px;font-size:11px';
   el.textContent = msg;
 }
 
-// ── History (cross-device via Google Sheets) ──────────────────
-const SCRIPT_URL = document.getElementById('scriptUrl').value;
-
-// localStorage fallback — stores records submitted on THIS device
-// while the live fetch is loading, and as a cache
+// ── History ───────────────────────────────────────────────────
 const HISTORY_KEY = 'glg_submissions';
 
 function loadLocalHistory(){
@@ -584,9 +761,9 @@ function loadLocalHistory(){
 }
 
 function saveToHistory(data){
-  const history = loadLocalHistory();
-  history.unshift({ ...data, _savedAt: new Date().toISOString() });
-  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 200))); } catch(e){}
+  const h = loadLocalHistory();
+  h.unshift({ ...data, _savedAt: new Date().toISOString() });
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(h.slice(0,200))); } catch(e){}
   renderHistory();
 }
 
@@ -600,14 +777,10 @@ function toggleHistory(){
 
 async function fetchAndRenderHistory(){
   document.getElementById('historyContent').innerHTML =
-    '<div class="history-empty">⟳ Loading from Google Sheets…</div>';
+    '<div class="history-empty">' + T[currentLang].loading + '</div>';
 
   const sheetId = document.getElementById('sheetId').value.trim();
-  if(!sheetId){
-    document.getElementById('historyContent').innerHTML =
-      '<div class="history-empty">Enter your Spreadsheet ID above to load history.</div>';
-    return;
-  }
+  if(!sheetId) return;
 
   const cbName = '_glgCb' + Date.now();
   let done = false;
@@ -617,36 +790,32 @@ async function fetchAndRenderHistory(){
     delete window[cbName];
     try {
       const table = raw && raw.table;
-      if(!table) throw new Error('No table in response — is the sheet named "Records" and shared as Viewer?');
-
+      if(!table) throw new Error('No table — check sheet name "Records" and sharing settings.');
       const cols = {};
       (table.cols || []).forEach(function(c,i){ if(c.label) cols[c.label] = i; });
-
       const KEY_MAP = {
-        'Timestamp':'_timestamp','Customer Name':'customerName','Notes':'notes','Category':'category',
-        'Sales Price (zł)':'salesPrice','Slab Cost (zł)':'slabCost','Total Profit':'totalProfit',
-        'Profit Margin %':'profitMargin','MK Share':'mkShare','GLG Share':'glgShare',
-        'Deposit (zł)':'deposit','To Be Collected':'toBeCollected'
+        'Timestamp':'_timestamp','Customer Name':'customerName','Notes':'notes',
+        'Category':'category','Sales Price (zł)':'salesPrice','Slab Cost (zł)':'slabCost',
+        'Total Profit':'totalProfit','Profit Margin %':'profitMargin',
+        'MK Share':'mkShare','GLG Share':'glgShare','Deposit (zł)':'deposit',
+        'To Be Collected':'toBeCollected','Additional Costs (zł)':'additionalCosts',
+        'MK Costs (zł)':'mkCosts'
       };
-
       const records = (table.rows || []).map(function(row){
         const obj = {};
         Object.keys(KEY_MAP).forEach(function(label){
-          const ci = cols[label];
-          const key = KEY_MAP[label];
+          const ci = cols[label]; const key = KEY_MAP[label];
           if(ci === undefined){ obj[key]=''; return; }
           const cell = row.c && row.c[ci];
           if(!cell || cell.v == null){ obj[key]=''; return; }
           if(typeof cell.v === 'string' && cell.v.startsWith('Date(')){
             const p = cell.v.replace('Date(','').replace(')','').split(',').map(Number);
             obj[key] = new Date(Date.UTC(p[0],p[1],p[2],p[3]||0,p[4]||0,p[5]||0)).toISOString();
-          } else {
-            obj[key] = cell.v;
-          }
+          } else { obj[key] = cell.v; }
         });
         return obj;
       }).reverse();
-
+      window._historyRecords = records;
       renderHistoryRows(records, false);
       document.getElementById('historyCount').textContent = records.length;
     } catch(err){
@@ -656,50 +825,42 @@ async function fetchAndRenderHistory(){
   };
 
   const s = document.createElement('script');
-  // gviz uses tqx=responseHandler:NAME — NOT &callback=NAME
   s.src = 'https://docs.google.com/spreadsheets/d/' + sheetId +
     '/gviz/tq?sheet=Records&tqx=responseHandler:' + cbName;
   s.onerror = function(){
     if(done) return; done = true; delete window[cbName];
     document.getElementById('historyContent').innerHTML =
-      '<div class="history-empty" style="color:#c0392b">⚠ Script load error — check Sheet ID and sharing settings.</div>';
+      '<div class="history-empty" style="color:#c0392b">⚠ Could not load — check Sheet ID and sharing settings.</div>';
   };
   setTimeout(function(){
-    if(!done){
-      done = true; delete window[cbName];
+    if(!done){ done = true; delete window[cbName];
       document.getElementById('historyContent').innerHTML =
-        '<div class="history-empty" style="color:#c0392b">⚠ Timed out — ensure the Sheet is shared as "Anyone with the link → Viewer".</div>';
+        '<div class="history-empty" style="color:#c0392b">⚠ Timed out — ensure sheet is shared as "Anyone with the link → Viewer".</div>';
     }
   }, 10000);
   document.head.appendChild(s);
 }
 
-// Initialise history count on load
-renderHistory();
-
 function renderHistoryRows(records, isCache){
+  const t = T[currentLang];
   const container = document.getElementById('historyContent');
-
   if(!records.length){
-    container.innerHTML = '<div class="history-empty">No submissions yet — records will appear here after you click Accept &amp; Submit.</div>';
+    container.innerHTML = '<div class="history-empty">' + t.noRecords + '</div>';
     return;
   }
-
-  const rows = records.map(d => {
+  const rows = records.map((d, i) => {
     const ts = d['_timestamp'] || d['_savedAt'] || '';
-    const submittedDate = ts ? new Date(ts).toLocaleDateString('en-GB', {
+    const date = ts ? new Date(ts).toLocaleDateString('en-GB',{
       day:'2-digit', month:'short', year:'numeric', timeZone:'Europe/Warsaw'
     }) : '—';
-
     const profit = typeof d.totalProfit === 'number' ? d.totalProfit : parseFloat(d.totalProfit) || 0;
     const profitClass = profit >= 0 ? 'profit-pos' : 'profit-neg';
-    const cat = (d.category || '').replace(/Category [IVX]+ [—-] /,'');
     const margin = typeof d.profitMargin === 'number' ? d.profitMargin : parseFloat(d.profitMargin) || 0;
-
-    return `<tr>
-      <td class="muted" style="white-space:nowrap">${submittedDate}</td>
+    const cat = d.category || '—';
+    return `<tr class="history-row" onclick="loadIntoForm(window._historyRecords[${i}])" title="${escHtml(t.loadTitle)}">
+      <td class="muted" style="white-space:nowrap">${date}</td>
       <td>${escHtml(d.customerName || '—')}${d.notes ? '<br><span style="color:#aaa;font-size:11px;font-style:italic">'+escHtml(d.notes)+'</span>' : ''}</td>
-      <td class="muted">${escHtml(cat || '—')}</td>
+      <td class="muted">${escHtml(cat)}</td>
       <td class="num">${fmtH(d.salesPrice)}</td>
       <td class="num">${fmtH(d.slabCost)}</td>
       <td class="${profitClass}">${fmtH(profit)}</td>
@@ -712,19 +873,19 @@ function renderHistoryRows(records, isCache){
     : '<span style="color:#2d7a4a;font-size:10px">● Live from Google Sheets</span>';
 
   container.innerHTML = `
-    <div style="padding:8px 18px 4px;display:flex;justify-content:flex-end;align-items:center;gap:8px">
+    <div style="padding:8px 18px 4px;display:flex;justify-content:flex-end">
       <span id="historyLiveNote">${sourceLabel}</span>
     </div>
     <div style="overflow-x:auto">
       <table class="history-table">
         <thead><tr>
-          <th>Date</th>
-          <th>Customer / Notes</th>
-          <th>Category</th>
-          <th style="text-align:right">Sales Price</th>
-          <th style="text-align:right">Slab Cost</th>
-          <th style="text-align:right">Profit</th>
-          <th style="text-align:right">Margin %</th>
+          <th>${t.hdrDate}</th>
+          <th>${t.hdrCustomer}</th>
+          <th>${t.hdrCategory}</th>
+          <th style="text-align:right">${t.hdrSales}</th>
+          <th style="text-align:right">${t.hdrSlab}</th>
+          <th style="text-align:right">${t.hdrProfit}</th>
+          <th style="text-align:right">${t.hdrMargin}</th>
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>
@@ -732,13 +893,15 @@ function renderHistoryRows(records, isCache){
 }
 
 function clearHistory(){
-  if(!confirm('This clears your local browser cache only. Records in Google Sheets are unaffected.\n\nContinue?')) return;
+  if(!confirm(currentLang === 'PL'
+    ? 'Wyczyści to tylko lokalną pamięć podręczną. Rekordy w Google Sheets nie zostaną usunięte.\n\nKontynuować?'
+    : 'This clears your local browser cache only. Records in Google Sheets are unaffected.\n\nContinue?')) return;
   try { localStorage.removeItem(HISTORY_KEY); } catch(e){}
+  window._historyRecords = [];
   renderHistoryRows([], false);
   document.getElementById('historyCount').textContent = '—';
 }
 
-// Alias for initial render
 function renderHistory(){
   const count = loadLocalHistory().length;
   document.getElementById('historyCount').textContent = count || '—';
@@ -746,7 +909,7 @@ function renderHistory(){
 
 function fmtH(n){
   const num = typeof n === 'number' ? n : parseFloat(n);
-  if(isNaN(num)) return '—';
+  if(isNaN(num) || num === '') return '—';
   return num.toLocaleString('en-GB',{minimumFractionDigits:0,maximumFractionDigits:0}) + ' zł';
 }
 
@@ -754,8 +917,12 @@ function escHtml(s){
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-// Initialise history count on load
+// ── Restore preferences & init ────────────────────────────────
 renderHistory();
+try {
+  const saved = localStorage.getItem('glg_lang');
+  if(saved === 'PL') setLang('PL');
+} catch(e) {}
 </script>
 </body>
 </html>
