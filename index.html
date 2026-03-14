@@ -135,7 +135,27 @@ input[type=number]{-moz-appearance:textfield}
   border-radius:3px;padding:5px 12px;cursor:pointer;transition:all .15s}
 .btn-clear-history:hover{background:#fde8e8}
 
+/* VIEW TOGGLE */
+.view-toggle{display:flex;gap:4px;margin-left:8px}
+.view-btn{font-family:'DM Sans',sans-serif;font-size:10px;font-weight:500;letter-spacing:.08em;
+  border-radius:3px;padding:3px 9px;cursor:pointer;transition:all .15s;border:1px solid #3a3830;
+  background:none;color:#6a6050}
+.view-btn.active-co{color:#c9a84c;border-color:#c9a84c;background:rgba(201,168,76,.08)}
+.view-btn.active-cu{color:#5a9ee0;border-color:#5a9ee0;background:rgba(90,158,224,.08)}
+.view-btn:hover:not(.active-co):not(.active-cu){color:#aaa;border-color:#555}
+.customer-banner{background:#eef5fd;border-bottom:2px solid #5a9ee0;padding:10px 20px;
+  display:none;align-items:center;gap:10px;font-size:12px;color:#2a5a8a}
+.customer-banner.visible{display:flex}
+body.customer-view .company-only{display:none !important}
+body.customer-view .stats{grid-template-columns:1fr}
+body.customer-view .stats .stat-card:nth-child(n+2){display:none}
+body.customer-view .customer-hide{display:none !important}
+body.customer-view .breakdown-mk{display:none}
+body.customer-view .breakdown-glg{display:none}
+body.customer-view .history-wrap{display:none}
+
 @media(max-width:700px){
+  .nav-brand, .nav-sub{ display:none }
   .history-table th:nth-child(n+5),.history-table td:nth-child(n+5){display:none}
   .stats{grid-template-columns:1fr 1fr}
   .body-wrap{grid-template-columns:1fr}
@@ -155,6 +175,12 @@ input[type=number]{-moz-appearance:textfield}
   <button class="cancel-edit-btn" onclick="cancelEdit()" data-i18n="cancelEdit">✕ Cancel</button>
 </div>
 
+<!-- CUSTOMER VIEW BANNER -->
+<div id="customerBanner" class="customer-banner">
+  <span>👤</span>
+  <span data-i18n="customerBannerText">Customer view — internal data hidden</span>
+</div>
+
 <nav>
   <div class="nav-logo"><img id="navLogo" src="" alt="Golden Leaf Granit"></div>
   <div class="nav-divider"></div>
@@ -166,6 +192,11 @@ input[type=number]{-moz-appearance:textfield}
     <button id="btnEN" class="lang-btn active" onclick="setLang('EN')">EN</button>
     <button id="btnPL" class="lang-btn" onclick="setLang('PL')">PL</button>
   </div>
+  <div class="nav-divider" style="margin-left:8px"></div>
+  <div class="view-toggle">
+    <button id="btnViewCo" class="view-btn active-co" onclick="setView('company')" data-i18n="viewCompany">🏢 Company</button>
+    <button id="btnViewCu" class="view-btn" onclick="setView('customer')" data-i18n="viewCustomer">👤 Customer</button>
+  </div>
 </nav>
 
 <div class="stats">
@@ -174,16 +205,16 @@ input[type=number]{-moz-appearance:textfield}
     <div class="stat-value" id="sSales">— <span>zł</span></div>
     <div><span class="stat-badge badge-override" id="overrideBadge" onclick="focusPrice()" data-i18n="override">Override</span></div>
   </div>
-  <div class="stat-card">
+  <div class="stat-card company-only">
     <div class="stat-label" data-i18n="statProfit">Total Profit</div>
     <div class="stat-value" id="sProfit">— <span>zł</span></div>
     <div class="stat-badge badge-margin" id="sMargin"></div>
   </div>
-  <div class="stat-card">
+  <div class="stat-card company-only">
     <div class="stat-label" data-i18n="statMk">MK Cost</div>
     <div class="stat-value" id="sMk">— <span>zł</span></div>
   </div>
-  <div class="stat-card">
+  <div class="stat-card company-only">
     <div class="stat-label" data-i18n="statMkGross">MK Gross Margin</div>
     <div class="stat-value" id="sMkGross">— <span>zł</span></div>
   </div>
@@ -217,7 +248,7 @@ input[type=number]{-moz-appearance:textfield}
           <option value="10837|granite" data-i18n-opt="cat6">Category VI — Double complex monument (230×250 cm)</option>
         </select>
         <div class="finish-bar" id="finishBar"></div>
-        <div class="two-col" style="margin-top:22px">
+        <div class="two-col customer-hide" style="margin-top:22px">
           <div>
             <label class="field-label" data-i18n="labelMkCosts">MK Costs (zł)</label>
             <input type="number" id="mkCosts" placeholder="Auto from category" data-i18n-ph="phMkCosts" oninput="calculate()">
@@ -262,12 +293,12 @@ input[type=number]{-moz-appearance:textfield}
     <div class="card">
       <div class="card-title" data-i18n="cardBreakdown">Breakdown</div>
       <div class="card-body" style="padding-top:8px">
-        <div class="breakdown-row"><span class="bl" data-i18n="bMkShare">MK Share</span><span class="bv" id="bMk">—</span></div>
-        <div class="breakdown-row"><span class="bl" data-i18n="bGlgShare">GLG Share</span><span class="bv" id="bGlg">—</span></div>
+        <div class="breakdown-row breakdown-mk"><span class="bl" data-i18n="bMkShare">MK Share</span><span class="bv" id="bMk">—</span></div>
+        <div class="breakdown-row breakdown-glg"><span class="bl" data-i18n="bGlgShare">GLG Share</span><span class="bv" id="bGlg">—</span></div>
         <div class="breakdown-row"><span class="bl" data-i18n="lblCollect">To Be Collected</span><span class="bv" id="bCollect">—</span></div>
       </div>
     </div>
-    <div class="card">
+    <div class="card company-only">
       <div class="card-title" data-i18n="cardAnalytics">GLG Analytics</div>
       <div class="card-body" style="padding-top:8px">
         <div class="analytics-row"><span class="al" data-i18n="aGlgCos">GLG CoS</span><span class="av" id="aGlgCos">—</span></div>
@@ -276,7 +307,7 @@ input[type=number]{-moz-appearance:textfield}
         <div class="analytics-row"><span class="al" data-i18n="aMkMargin">MK Gross Margin</span><span class="av" id="aMkMargin">—</span></div>
       </div>
     </div>
-    <div class="card">
+    <div class="card company-only">
       <div class="card-title" data-i18n="cardSave">Save to Google Sheet</div>
       <div class="card-body">
         <input type="hidden" id="sheetId" value="18Pm5tdTf40mVA37bbWGRuqk3gC4DYF16nXAWID6f-L0">
@@ -348,7 +379,8 @@ const T = {
     marginSuffix:'% margin', suggestedPrefix:'Suggested: ',
     editBannerText:'Editing previous quote', editBannerSub:'make changes and resubmit to save a new record',
     cancelEdit:'✕ Cancel',
-    finishConcrete:'Finish: Concrete paving slab or concrete block with concrete kerb',
+    viewCompany:'🏢 Company', viewCustomer:'👤 Customer',
+    customerBannerText:'Customer view — internal data hidden',
     finishGranite:'Finish: Granite paths with granite kerb',
     hdrDate:'Date', hdrCustomer:'Customer / Notes', hdrCategory:'Category',
     hdrSales:'Sales Price', hdrSlab:'Slab Cost', hdrProfit:'Profit', hdrMargin:'Margin %',
@@ -382,7 +414,8 @@ const T = {
     marginSuffix:'% marży', suggestedPrefix:'Sugerowana: ',
     editBannerText:'Edycja poprzedniej wyceny', editBannerSub:'wprowadź zmiany i wyślij ponownie',
     cancelEdit:'✕ Anuluj',
-    finishConcrete:'Wykończenie: Płyta betonowa lub blok betonowy z obrzeżem betonowym',
+    viewCompany:'🏢 Firma', viewCustomer:'👤 Klient',
+    customerBannerText:'Widok klienta — dane wewnętrzne ukryte',
     finishGranite:'Wykończenie: Ścieżki granitowe z obrzeżem granitowym',
     hdrDate:'Data', hdrCustomer:'Klient / Uwagi', hdrCategory:'Kategoria',
     hdrSales:'Cena sprzedaży', hdrSlab:'Koszt płyty', hdrProfit:'Zysk', hdrMargin:'Marża %',
@@ -423,6 +456,11 @@ function setLang(lang) {
   document.getElementById('submitBtnLabel').textContent =
     editMode ? T[lang].submitBtnEdit : T[lang].submitBtn;
 
+  // Update view toggle labels
+  document.getElementById('btnViewCo').textContent = T[lang].viewCompany;
+  document.getElementById('btnViewCu').textContent = T[lang].viewCustomer;
+  document.getElementById('customerBanner').querySelector('[data-i18n="customerBannerText"]').textContent = T[lang].customerBannerText;
+
   // Re-render history table headers if open
   if (window._historyRecords && document.getElementById('historyBody').classList.contains('open')) {
     renderHistoryRows(window._historyRecords, false);
@@ -431,7 +469,25 @@ function setLang(lang) {
   try { localStorage.setItem('glg_lang', lang); } catch(e) {}
 }
 
-// ── Calculator core ───────────────────────────────────────────
+// ── View toggle ───────────────────────────────────────────────
+let currentView = 'company';
+
+function setView(view) {
+  currentView = view;
+  const isCustomer = view === 'customer';
+  document.body.classList.toggle('customer-view', isCustomer);
+  document.getElementById('customerBanner').classList.toggle('visible', isCustomer);
+  document.getElementById('btnViewCo').className = 'view-btn' + (isCustomer ? '' : ' active-co');
+  document.getElementById('btnViewCu').className = 'view-btn' + (isCustomer ? ' active-cu' : '');
+  // Hide edit banner in customer view
+  if(isCustomer && editMode) {
+    document.getElementById('editBanner').style.visibility = 'hidden';
+  } else {
+    document.getElementById('editBanner').style.visibility = '';
+  }
+}
+
+
 let priceOverridden = false;
 let priceTouched = false;
 
