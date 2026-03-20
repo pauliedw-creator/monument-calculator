@@ -135,7 +135,16 @@ input[type=number]{-moz-appearance:textfield}
   border-radius:3px;padding:5px 12px;cursor:pointer;transition:all .15s}
 .btn-clear-history:hover{background:#fde8e8}
 
-/* VIEW TOGGLE */
+/* OPTION TOGGLE (Monument Type, Payment Method) */
+.opt-toggle{display:flex;gap:0;margin-top:0;border:1px solid #d0cbc3;border-radius:4px;overflow:hidden}
+.opt-btn{flex:1;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:400;color:#888;
+  background:#faf9f7;border:none;padding:9px 8px;cursor:pointer;transition:all .15s;text-align:center;
+  border-right:1px solid #d0cbc3}
+.opt-btn:last-child{border-right:none}
+.opt-btn.selected{background:#1a1a18;color:#c9a84c;font-weight:500}
+.opt-btn:hover:not(.selected){background:#f0ece6;color:#555}
+
+
 .view-toggle{display:flex;gap:4px;margin-left:8px}
 .view-btn{font-family:'DM Sans',sans-serif;font-size:10px;font-weight:500;letter-spacing:.08em;
   border-radius:3px;padding:3px 9px;cursor:pointer;transition:all .15s;border:1px solid #3a3830;
@@ -237,6 +246,11 @@ body.customer-view .history-wrap{display:none}
     <div class="card">
       <div class="card-title" data-i18n="cardMonument">Monument &amp; Costs</div>
       <div class="card-body">
+        <label class="field-label" data-i18n="labelMonumentType">Monument Type</label>
+        <div class="opt-toggle">
+          <button class="opt-btn selected" id="mTypeDisplay" onclick="selectMonumentType('display')" data-i18n="mTypeDisplay">Display Monument</button>
+          <button class="opt-btn" id="mTypeCustom" onclick="selectMonumentType('custom')" data-i18n="mTypeCustom">Custom Monument</button>
+        </div>
         <label class="field-label" data-i18n="labelCategory">Monument Category</label>
         <select id="category" onchange="onCatChange()">
           <option value="" data-i18n-opt="optSelect">— Select a category —</option>
@@ -285,6 +299,11 @@ body.customer-view .history-wrap{display:none}
         <div class="suggested-note" id="suggestedNote"></div>
         <label class="field-label" data-i18n="labelDeposit">Deposit Taken (zł)</label>
         <input type="number" id="deposit" placeholder="0" oninput="calculate()">
+        <label class="field-label" data-i18n="labelPaymentMethod">Payment Method</label>
+        <div class="opt-toggle">
+          <button class="opt-btn selected" id="payCash" onclick="selectPaymentMethod('cash')" data-i18n="payCash">Cash</button>
+          <button class="opt-btn" id="payTransfer" onclick="selectPaymentMethod('transfer')" data-i18n="payTransfer">Bank Transfer</button>
+        </div>
       </div>
     </div>
   </div>
@@ -379,7 +398,8 @@ const T = {
     marginSuffix:'% margin', suggestedPrefix:'Suggested: ',
     editBannerText:'Editing previous quote', editBannerSub:'make changes and resubmit to save a new record',
     cancelEdit:'✕ Cancel',
-    viewCompany:'🏢 Company', viewCustomer:'👤 Customer',
+    labelMonumentType:'Monument Type', mTypeDisplay:'Display Monument', mTypeCustom:'Custom Monument',
+    labelPaymentMethod:'Payment Method', payCash:'Cash', payTransfer:'Bank Transfer',
     customerBannerText:'Customer view — internal data hidden',
     finishGranite:'Finish: Granite paths with granite kerb',
     hdrDate:'Date', hdrCustomer:'Customer / Notes', hdrCategory:'Category',
@@ -414,7 +434,8 @@ const T = {
     marginSuffix:'% marży', suggestedPrefix:'Sugerowana: ',
     editBannerText:'Edycja poprzedniej wyceny', editBannerSub:'wprowadź zmiany i wyślij ponownie',
     cancelEdit:'✕ Anuluj',
-    viewCompany:'🏢 Firma', viewCustomer:'👤 Klient',
+    labelMonumentType:'Typ nagrobka', mTypeDisplay:'Nagrobek katalogowy', mTypeCustom:'Nagrobek niestandardowy',
+    labelPaymentMethod:'Metoda płatności', payCash:'Gotówka', payTransfer:'Przelew bankowy',
     customerBannerText:'Widok klienta — dane wewnętrzne ukryte',
     finishGranite:'Wykończenie: Ścieżki granitowe z obrzeżem granitowym',
     hdrDate:'Data', hdrCustomer:'Klient / Uwagi', hdrCategory:'Kategoria',
@@ -469,7 +490,23 @@ function setLang(lang) {
   try { localStorage.setItem('glg_lang', lang); } catch(e) {}
 }
 
-// ── View toggle ───────────────────────────────────────────────
+// ── Option toggles ────────────────────────────────────────────
+let monumentType  = 'display'; // 'display' | 'custom'
+let paymentMethod = 'cash';    // 'cash' | 'transfer'
+
+function selectMonumentType(val) {
+  monumentType = val;
+  document.getElementById('mTypeDisplay').classList.toggle('selected', val === 'display');
+  document.getElementById('mTypeCustom').classList.toggle('selected', val === 'custom');
+}
+
+function selectPaymentMethod(val) {
+  paymentMethod = val;
+  document.getElementById('payCash').classList.toggle('selected', val === 'cash');
+  document.getElementById('payTransfer').classList.toggle('selected', val === 'transfer');
+}
+
+
 let currentView = 'company';
 
 function setView(view) {
@@ -686,6 +723,9 @@ function loadIntoForm(record) {
   if(record.deposit !== '' && record.deposit != null)
     document.getElementById('deposit').value = record.deposit;
 
+  if(record.monumentType) selectMonumentType(record.monumentType.includes('STOCK') ? 'display' : 'custom');
+  if(record.paymentMethod) selectPaymentMethod(record.paymentMethod === 'Cash' ? 'cash' : 'transfer');
+
   // Sales price
   priceTouched = true;
   priceOverridden = true;
@@ -718,6 +758,8 @@ function cancelEdit(){
   document.getElementById('deposit').value = '';
   document.getElementById('orderDate').value = new Date().toISOString().slice(0,10);
   document.getElementById('finishBar').style.display = 'none';
+  selectMonumentType('display');
+  selectPaymentMethod('cash');
   priceTouched = false;
   priceOverridden = false;
   updateOverrideUI();
@@ -749,6 +791,8 @@ function getFormData(){
     additionalCosts: document.getElementById('addCosts').value,
     salesPrice:      document.getElementById('salesPrice').value,
     deposit:         document.getElementById('deposit').value,
+    monumentType:    monumentType === 'display' ? 'STOCK Monument Deposit' : 'Custom Monument Deposit',
+    paymentMethod:   paymentMethod === 'cash' ? 'Cash' : 'Banktransfer',
     totalProfit:     window._calc.totalProfit,
     profitMargin:    window._calc.margin,
     mkShare:         window._calc.mkShare,
@@ -865,7 +909,7 @@ async function fetchAndRenderHistory(){
         'Total Profit':'totalProfit','Profit Margin %':'profitMargin',
         'MK Share':'mkShare','GLG Share':'glgShare','Deposit (zł)':'deposit',
         'To Be Collected':'toBeCollected','Additional Costs (zł)':'additionalCosts',
-        'MK Costs (zł)':'mkCosts'
+        'MK Costs (zł)':'mkCosts','Monument Type':'monumentType','Payment Method':'paymentMethod'
       };
       const records = (table.rows || []).map(function(row){
         const obj = {};
