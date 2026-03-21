@@ -794,15 +794,67 @@ function loadQuoteForConfirmation(quoteId){
   const record = quotes.find(q => q._quoteId === quoteId);
   if(!record) return;
   activeQuoteId = quoteId;
-  quoteMode = true;
-  // Load all fields (reuse existing loadIntoForm logic)
-  loadIntoForm(record);
-  // Override mode flags set by loadIntoForm — clear edit mode, set quote mode
+
+  // Populate all fields directly (don't use loadIntoForm which sets editMode)
+  const dateVal = record.quoteDate || (record._savedAt ? new Date(record._savedAt).toISOString().slice(0,10) : '');
+  if(dateVal) document.getElementById('orderDate').value = dateVal.slice(0,10);
+
+  document.getElementById('customerName').value = record.customerName || '';
+  document.getElementById('notes').value = record.notes || '';
+
+  // Category
+  const sel = document.getElementById('category');
+  const stored = (record.category || '').trim();
+  const catKeys = ['cat1','cat2','cat3','cat4','cat5','cat6'];
+  const catValues = ['3998|concrete','6021|concrete','6791|concrete','10837|granite','6791|concrete','10837|granite'];
+  for(let i = 0; i < catKeys.length; i++){
+    if(T.EN[catKeys[i]].trim() === stored){ sel.value = catValues[i]; break; }
+  }
+  onCatChange();
+
+  if(record.mkCosts != null && record.mkCosts !== '') document.getElementById('mkCosts').value = record.mkCosts;
+  if(record.slabCost != null && record.slabCost !== '') document.getElementById('slabCost').value = record.slabCost;
+  if(record.additionalCosts != null && record.additionalCosts !== '') document.getElementById('addCosts').value = record.additionalCosts;
+
+  // Deposit + payment method
+  if(record.deposit != null && record.deposit !== ''){
+    document.getElementById('deposit').value = record.deposit;
+    document.getElementById('paymentMethodWrap').style.display = 'block';
+  }
+  if(record.paymentMethod){
+    const pm = record.paymentMethod === 'Cash' ? 'cash' : record.paymentMethod === 'Bank Transfer' ? 'transfer' : null;
+    if(pm){
+      paymentMethod = pm;
+      document.getElementById('payCash').classList.toggle('selected', pm === 'cash');
+      document.getElementById('payTransfer').classList.toggle('selected', pm === 'transfer');
+    }
+  }
+
+  // Monument type
+  if(record.monumentType){
+    const mt = record.monumentType.includes('STOCK') ? 'display' : 'custom';
+    monumentType = mt;
+    document.getElementById('mTypeDisplay').classList.toggle('selected', mt === 'display');
+    document.getElementById('mTypeCustom').classList.toggle('selected', mt === 'custom');
+  }
+
+  // Sales price
+  priceTouched = true;
+  priceOverridden = true;
+  if(record.salesPrice != null && record.salesPrice !== '') document.getElementById('salesPrice').value = record.salesPrice;
+
+  calculate();
+  updateOverrideUI();
+
+  // Quote mode — not edit mode
   editMode = false;
+  quoteMode = true;
   document.getElementById('editBanner').style.display = 'none';
   document.getElementById('quoteBanner').classList.add('visible');
   document.getElementById('submitBtnLabel').textContent = T[currentLang].submitBtnConfirm;
   document.getElementById('quoteBtn').style.display = 'none';
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function cancelQuote(){
@@ -824,12 +876,11 @@ function removeQuote(quoteId){
 let editMode = false;
 
 function loadIntoForm(record) {
-  // Date — extract from ISO timestamp
-  if(record._timestamp){
-    try {
-      document.getElementById('orderDate').value = new Date(record._timestamp).toISOString().slice(0,10);
-    } catch(e) {}
-  }
+  // Date — use quoteDate if present, else fall back to timestamp
+  const dateVal = record.quoteDate || (record._timestamp
+    ? new Date(record._timestamp).toISOString().slice(0,10)
+    : (record._savedAt ? new Date(record._savedAt).toISOString().slice(0,10) : ''));
+  if(dateVal) document.getElementById('orderDate').value = dateVal.slice(0,10);
 
   document.getElementById('customerName').value = record.customerName || '';
   document.getElementById('notes').value = record.notes || '';
