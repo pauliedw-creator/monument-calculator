@@ -789,12 +789,11 @@ function saveAsQuote(){
   fetchAndRenderHistory();
 }
 
-function loadQuoteForConfirmation(quoteId){
-  const quotes = loadQuotes();
-  const record = quotes.find(q => q._quoteId === quoteId);
-  if(!record){ alert('Quote not found: ' + quoteId); return; }
-  alert('Quote found:\n' + JSON.stringify(record, null, 2).slice(0, 500));
-  activeQuoteId = quoteId;
+function loadQuoteForConfirmation(index){
+  const record = window._quoteRecords && window._quoteRecords[index];
+  if(!record){ alert('Quote not found at index ' + index); return; }
+  alert('Found: ' + record.customerName + ' / ' + record.category);
+  activeQuoteId = record._quoteId;
 
   // Populate all fields directly (don't use loadIntoForm which sets editMode)
   const dateVal = record.quoteDate || (record._savedAt ? new Date(record._savedAt).toISOString().slice(0,10) : '');
@@ -1204,9 +1203,10 @@ function renderHistoryRows(soldRecords, isCache){
 
   // ── Quotes section ────────────────────────────────────────
   let quotesHTML = '';
+  window._quoteRecords = quotes;
   if(quotes.length){
-    const qRows = quotes.map(d =>
-      buildRow(d, `loadQuoteForConfirmation(${JSON.stringify(d._quoteId)})`, true)
+    const qRows = quotes.map((d, i) =>
+      buildRow(d, `loadQuoteForConfirmation(${i})`, true)
     ).join('');
     quotesHTML = `
       <div class="history-section-title quotes">
