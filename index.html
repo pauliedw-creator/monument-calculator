@@ -538,7 +538,7 @@ function setLang(lang) {
 
   // Re-render history table headers if open
   if (window._historyRecords && document.getElementById('historyBody').classList.contains('open')) {
-    renderHistoryRows(window._historyRecords, false);
+    renderHistoryRows(window._historyRecords, false, window._quoteRecords);
   }
 
   try { localStorage.setItem('glg_lang', lang); } catch(e) {}
@@ -775,15 +775,23 @@ function saveAsQuote(){
     return;
   }
   const data = getFormData();
+  const quoteId = 'q_' + Date.now();
+  data._action  = 'saveQuote';
+  data._quoteId = quoteId;
   data._savedAt = new Date().toISOString();
-  data._quoteId = 'q_' + Date.now();
   data._status  = 'quote';
-  const quotes = loadQuotes();
-  quotes.unshift(data);
-  try { localStorage.setItem(QUOTES_KEY, JSON.stringify(quotes.slice(0,100))); } catch(e){}
-  setStatus('success', currentLang==='PL' ? '📋 Wycena zapisana lokalnie.' : '📋 Quote saved locally.');
+
+  // Save to localStorage immediately for instant feedback
+  const localQuotes = loadQuotes();
+  localQuotes.unshift(data);
+  try { localStorage.setItem(QUOTES_KEY, JSON.stringify(localQuotes.slice(0,100))); } catch(e){}
+
+  // Also POST to Google Sheet (async — fire and forget)
+  const url = document.getElementById('scriptUrl').value.trim();
+  if(url) iframePost(url, data);
+
+  setStatus('success', currentLang==='PL' ? '📋 Wycena zapisana.' : '📋 Quote saved.');
   renderHistory();
-  // Open history to show it
   document.getElementById('historyBody').classList.add('open');
   document.getElementById('historyChevron').classList.add('open');
   fetchAndRenderHistory();
@@ -1021,6 +1029,10 @@ async function submitToSheet(){
   setStatus('info', currentLang === 'PL' ? 'Wysyłanie do Google Sheets…' : 'Sending to Google Sheets…');
   try {
     const data = getFormData();
+    if(quoteMode && activeQuoteId){
+      data._action  = 'confirmSold';
+      data._quoteId = activeQuoteId;
+    }
     await iframePost(url, data);
     setStatus('success', currentLang === 'PL' ? '✓ Rekord zapisany pomyślnie.' : '✓ Record saved to Google Sheet successfully.');
     saveToHistory(data);
@@ -1097,75 +1109,94 @@ function toggleHistory(){
 }
 
 async function fetchAndRenderHistory(){
-  // Render quotes from localStorage immediately while sheet loads
+  // Show local quotes immediately while sheet data loads
   renderHistoryRows([], true);
 
   const sheetId = document.getElementById('sheetId').value.trim();
   if(!sheetId) return;
 
-  const cbName = '_glgCb' + Date.now();
-  let done = false;
-
-  window[cbName] = function(raw){
-    if(done) return; done = true;
-    delete window[cbName];
-    try {
-      const table = raw && raw.table;
-      if(!table) throw new Error('No table — check sheet name "Records" and sharing settings.');
-      const cols = {};
-      (table.cols || []).forEach(function(c,i){ if(c.label) cols[c.label] = i; });
-      const KEY_MAP = {
-        'Timestamp':'_timestamp','Customer Name':'customerName','Notes':'notes',
-        'Category':'category','Sales Price (zł)':'salesPrice','Slab Cost (zł)':'slabCost',
-        'Total Profit':'totalProfit','Profit Margin %':'profitMargin',
-        'MK Share':'mkShare','GLG Share':'glgShare','Deposit (zł)':'deposit',
-        'To Be Collected':'toBeCollected','Additional Costs (zł)':'additionalCosts',
-        'MK Costs (zł)':'mkCosts','Monument Type':'monumentType','Payment Method':'paymentMethod'
+  // Helper: load a sheet tab via gviz JSONP, returns promise resolving to array of objects
+  function gvizLoad(tabName, keyMap){
+    return new Promise(function(resolve){
+      const cbName = '_glgCb' + Date.now() + '_' + tabName;
+      let done = false;
+      window[cbName] = function(raw){
+        if(done) return; done = true;
+        delete window[cbName];
+        try {
+          const table = raw && raw.table;
+          if(!table){ resolve([]); return; }
+          const cols = {};
+          (table.cols || []).forEach(function(c,i){ if(c.label) cols[c.label] = i; });
+          const rows = (table.rows || []).map(function(row){
+            const obj = {};
+            Object.keys(keyMap).forEach(function(label){
+              const ci = cols[label]; const key = keyMap[label];
+              if(ci === undefined){ obj[key]=''; return; }
+              const cell = row.c && row.c[ci];
+              if(!cell || cell.v == null){ obj[key]=''; return; }
+              if(typeof cell.v === 'string' && cell.v.startsWith('Date(')){
+                const p = cell.v.replace('Date(','').replace(')','').split(',').map(Number);
+                obj[key] = new Date(Date.UTC(p[0],p[1],p[2],p[3]||0,p[4]||0,p[5]||0)).toISOString();
+              } else { obj[key] = cell.v; }
+            });
+            return obj;
+          }).reverse();
+          resolve(rows);
+        } catch(e){ resolve([]); }
       };
-      const records = (table.rows || []).map(function(row){
-        const obj = {};
-        Object.keys(KEY_MAP).forEach(function(label){
-          const ci = cols[label]; const key = KEY_MAP[label];
-          if(ci === undefined){ obj[key]=''; return; }
-          const cell = row.c && row.c[ci];
-          if(!cell || cell.v == null){ obj[key]=''; return; }
-          if(typeof cell.v === 'string' && cell.v.startsWith('Date(')){
-            const p = cell.v.replace('Date(','').replace(')','').split(',').map(Number);
-            obj[key] = new Date(Date.UTC(p[0],p[1],p[2],p[3]||0,p[4]||0,p[5]||0)).toISOString();
-          } else { obj[key] = cell.v; }
-        });
-        return obj;
-      }).reverse();
-      window._historyRecords = records;
-      renderHistoryRows(records, false);
-      document.getElementById('historyCount').textContent = records.length;
-    } catch(err){
-      document.getElementById('historyContent').innerHTML =
-        '<div class="history-empty" style="color:#c0392b">⚠ ' + err.message + '</div>';
-    }
+      const s = document.createElement('script');
+      s.src = 'https://docs.google.com/spreadsheets/d/' + sheetId +
+        '/gviz/tq?sheet=' + encodeURIComponent(tabName) + '&tqx=responseHandler:' + cbName;
+      s.onerror = function(){ if(done) return; done=true; delete window[cbName]; resolve([]); };
+      setTimeout(function(){ if(!done){ done=true; delete window[cbName]; resolve([]); } }, 10000);
+      document.head.appendChild(s);
+    });
+  }
+
+  const KEY_MAP_RECORDS = {
+    'Timestamp':'_timestamp','Customer Name':'customerName','Notes':'notes',
+    'Category':'category','Sales Price (zł)':'salesPrice','Slab Cost (zł)':'slabCost',
+    'Total Profit':'totalProfit','Profit Margin %':'profitMargin',
+    'MK Share':'mkShare','GLG Share':'glgShare','Deposit (zł)':'deposit',
+    'To Be Collected':'toBeCollected','Additional Costs (zł)':'additionalCosts',
+    'MK Costs (zł)':'mkCosts','Monument Type':'monumentType','Payment Method':'paymentMethod'
   };
 
-  const s = document.createElement('script');
-  s.src = 'https://docs.google.com/spreadsheets/d/' + sheetId +
-    '/gviz/tq?sheet=Records&tqx=responseHandler:' + cbName;
-  s.onerror = function(){
-    if(done) return; done = true; delete window[cbName];
-    document.getElementById('historyContent').innerHTML =
-      '<div class="history-empty" style="color:#c0392b">⚠ Could not load — check Sheet ID and sharing settings.</div>';
-  };
-  setTimeout(function(){
-    if(!done){ done = true; delete window[cbName];
-      document.getElementById('historyContent').innerHTML =
-        '<div class="history-empty" style="color:#c0392b">⚠ Timed out — ensure sheet is shared as "Anyone with the link → Viewer".</div>';
-    }
-  }, 10000);
-  document.head.appendChild(s);
+  const KEY_MAP_QUOTES = Object.assign({}, KEY_MAP_RECORDS, {
+    '_quoteId':'_quoteId','Quote Date':'quoteDate'
+  });
+
+  // Load both tabs in parallel
+  Promise.all([
+    gvizLoad('Records', KEY_MAP_RECORDS),
+    gvizLoad('Quotes',  KEY_MAP_QUOTES)
+  ]).then(function(results){
+    const soldRecords  = results[0];
+    const sheetQuotes  = results[1];
+
+    // Merge sheet quotes with any local-only quotes (not yet synced)
+    const localQuotes  = loadQuotes();
+    const sheetIds     = new Set(sheetQuotes.map(q => q._quoteId).filter(Boolean));
+    const localOnly    = localQuotes.filter(q => q._quoteId && !sheetIds.has(q._quoteId));
+    const allQuotes    = sheetQuotes.concat(localOnly);
+
+    // Update localStorage to reflect sheet state (remove confirmed/deleted)
+    const merged = allQuotes.map(q => Object.assign({}, q, { _savedAt: q._savedAt || q._timestamp }));
+    try { localStorage.setItem(QUOTES_KEY, JSON.stringify(merged)); } catch(e){}
+
+    window._historyRecords = soldRecords;
+    window._quoteRecords   = allQuotes;
+    renderHistoryRows(soldRecords, false, allQuotes);
+    const total = soldRecords.length + allQuotes.length;
+    document.getElementById('historyCount').textContent = total || '—';
+  });
 }
 
-function renderHistoryRows(soldRecords, isCache){
+function renderHistoryRows(soldRecords, isCache, quotesOverride){
   const t = T[currentLang];
   const container = document.getElementById('historyContent');
-  const quotes = loadQuotes();
+  const quotes = quotesOverride !== undefined ? quotesOverride : loadQuotes();
 
   const sourceLabel = isCache
     ? '<span style="color:#b8860b;font-size:10px">⟳ Loading live data…</span>'
