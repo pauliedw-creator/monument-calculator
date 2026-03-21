@@ -791,8 +791,7 @@ function saveAsQuote(){
 
 function loadQuoteForConfirmation(index){
   const record = window._quoteRecords && window._quoteRecords[index];
-  if(!record){ alert('Quote not found at index ' + index); return; }
-  alert('Found: ' + record.customerName + ' / ' + record.category);
+  if(!record) return;
   activeQuoteId = record._quoteId;
 
   // Populate all fields directly (don't use loadIntoForm which sets editMode)
