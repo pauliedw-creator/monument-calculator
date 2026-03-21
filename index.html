@@ -792,7 +792,8 @@ function saveAsQuote(){
 function loadQuoteForConfirmation(quoteId){
   const quotes = loadQuotes();
   const record = quotes.find(q => q._quoteId === quoteId);
-  if(!record) return;
+  if(!record){ alert('Quote not found: ' + quoteId); return; }
+  alert('Quote found:\n' + JSON.stringify(record, null, 2).slice(0, 500));
   activeQuoteId = quoteId;
 
   // Populate all fields directly (don't use loadIntoForm which sets editMode)
