@@ -135,7 +135,34 @@ input[type=number]{-moz-appearance:textfield}
   border-radius:3px;padding:5px 12px;cursor:pointer;transition:all .15s}
 .btn-clear-history:hover{background:#fde8e8}
 
-/* OPTION TOGGLE (Monument Type, Payment Method) */
+/* QUOTE BANNER */
+.quote-banner{background:#fff8ec;border-bottom:2px solid #e8a020;padding:10px 20px;
+  display:none;align-items:center;justify-content:space-between;font-size:12px;color:#7a4a00}
+.quote-banner.visible{display:flex}
+.cancel-quote-btn{font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;color:#7a4a00;background:none;border:1px solid #e8a020;
+  border-radius:3px;padding:4px 10px;cursor:pointer;white-space:nowrap;margin-left:12px}
+.cancel-quote-btn:hover{background:#fff3dc}
+
+/* Quote / Sold section headers in history */
+.history-section-title{padding:10px 18px 6px;font-size:9px;letter-spacing:.2em;
+  text-transform:uppercase;font-weight:500;display:flex;align-items:center;gap:8px}
+.history-section-title.quotes{color:#e8a020}
+.history-section-title.sold{color:#2d7a4a}
+.history-section-title span.count{background:#f0ece6;color:#888;border-radius:20px;
+  padding:2px 8px;font-size:9px}
+.history-row.quote-row:hover td{background:#fff8ec !important}
+.status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.status-dot.quote{background:#e8a020}
+.status-dot.sold{background:#2d7a4a}
+
+/* Quote-only save button */
+.quote-save-btn{width:100%;margin-top:8px;padding:9px;border:1px solid #c9a84c;border-radius:4px;
+  background:#fff;color:#b8860b;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;
+  letter-spacing:.08em;cursor:pointer;transition:all .15s}
+.quote-save-btn:hover{background:#fffbef}
+
+
 .opt-toggle{display:flex;gap:0;margin-top:0;border:1px solid #d0cbc3;border-radius:4px;overflow:hidden}
 .opt-btn{flex:1;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:400;color:#888;
   background:#faf9f7;border:none;padding:9px 8px;cursor:pointer;transition:all .15s;text-align:center;
@@ -177,6 +204,12 @@ body.customer-view .history-wrap{display:none}
 </style>
 </head>
 <body>
+
+<!-- QUOTE CONFIRMATION BANNER -->
+<div id="quoteBanner" class="quote-banner">
+  <span>📋 &nbsp;<strong data-i18n="quoteBannerText">Confirming quote</strong> — <span data-i18n="quoteBannerSub">review details then confirm as sold to send to Google Sheet</span></span>
+  <button class="cancel-quote-btn" onclick="cancelQuote()" data-i18n="cancelQuote">✕ Cancel</button>
+</div>
 
 <!-- EDIT BANNER -->
 <div id="editBanner" style="display:none" class="edit-banner">
@@ -248,7 +281,7 @@ body.customer-view .history-wrap{display:none}
       <div class="card-body">
         <label class="field-label" data-i18n="labelMonumentType">Monument Type</label>
         <div class="opt-toggle">
-          <button class="opt-btn selected" id="mTypeDisplay" onclick="selectMonumentType('display')" data-i18n="mTypeDisplay">Display Monument</button>
+          <button class="opt-btn" id="mTypeDisplay" onclick="selectMonumentType('display')" data-i18n="mTypeDisplay">Display Monument</button>
           <button class="opt-btn" id="mTypeCustom" onclick="selectMonumentType('custom')" data-i18n="mTypeCustom">Custom Monument</button>
         </div>
         <label class="field-label" data-i18n="labelCategory">Monument Category</label>
@@ -298,34 +331,17 @@ body.customer-view .history-wrap{display:none}
         <input type="number" id="salesPrice" class="price-input" placeholder="Auto-calculated" data-i18n-ph="phSalesPrice" oninput="onPriceInput()">
         <div class="suggested-note" id="suggestedNote"></div>
         <label class="field-label" data-i18n="labelDeposit">Deposit Taken (zł)</label>
-        <input type="number" id="deposit" placeholder="0" oninput="calculate()">
-        <label class="field-label" data-i18n="labelPaymentMethod">Payment Method</label>
-        <div class="opt-toggle">
-          <button class="opt-btn selected" id="payCash" onclick="selectPaymentMethod('cash')" data-i18n="payCash">Cash</button>
-          <button class="opt-btn" id="payTransfer" onclick="selectPaymentMethod('transfer')" data-i18n="payTransfer">Bank Transfer</button>
+        <input type="number" id="deposit" placeholder="0" oninput="onDepositInput()">
+        <div id="paymentMethodWrap" style="display:none">
+          <label class="field-label" data-i18n="labelPaymentMethod">Payment Method</label>
+          <div class="opt-toggle">
+            <button class="opt-btn" id="payCash" onclick="selectPaymentMethod('cash')" data-i18n="payCash">Cash</button>
+            <button class="opt-btn" id="payTransfer" onclick="selectPaymentMethod('transfer')" data-i18n="payTransfer">Bank Transfer</button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div>
-    <div class="card">
-      <div class="card-title" data-i18n="cardBreakdown">Breakdown</div>
-      <div class="card-body" style="padding-top:8px">
-        <div class="breakdown-row breakdown-mk"><span class="bl" data-i18n="bMkShare">MK Share</span><span class="bv" id="bMk">—</span></div>
-        <div class="breakdown-row breakdown-glg"><span class="bl" data-i18n="bGlgShare">GLG Share</span><span class="bv" id="bGlg">—</span></div>
-        <div class="breakdown-row"><span class="bl" data-i18n="lblCollect">To Be Collected</span><span class="bv" id="bCollect">—</span></div>
-      </div>
-    </div>
-    <div class="card company-only">
-      <div class="card-title" data-i18n="cardAnalytics">GLG Analytics</div>
-      <div class="card-body" style="padding-top:8px">
-        <div class="analytics-row"><span class="al" data-i18n="aGlgCos">GLG CoS</span><span class="av" id="aGlgCos">—</span></div>
-        <div class="analytics-row"><span class="al" data-i18n="aGlgPct">GLG CoS %</span><span class="av" id="aGlgPct">—</span></div>
-        <div class="analytics-row"><span class="al" data-i18n="aGlgMargin">GLG Gross Margin</span><span class="av" id="aGlgMargin">—</span></div>
-        <div class="analytics-row"><span class="al" data-i18n="aMkMargin">MK Gross Margin</span><span class="av" id="aMkMargin">—</span></div>
-      </div>
-    </div>
     <div class="card company-only">
       <div class="card-title" data-i18n="cardSave">Save to Google Sheet</div>
       <div class="card-body">
@@ -342,7 +358,29 @@ body.customer-view .history-wrap{display:none}
         " onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter=''">
           <span id="submitBtnLabel" data-i18n="submitBtn">✓  Accept &amp; Submit</span>
         </button>
+        <button id="quoteBtn" class="quote-save-btn" onclick="saveAsQuote()">
+          <span id="quoteBtnLabel" data-i18n="quoteBtn">📋  Save as Quote</span>
+        </button>
         <div id="submitStatus" style="margin-top:10px;font-size:11px;min-height:16px;border-radius:3px;padding:0"></div>
+      </div>
+    </div>
+  </div>
+  <div>
+    <div class="card">
+      <div class="card-title" data-i18n="cardBreakdown">Breakdown</div>
+      <div class="card-body" style="padding-top:8px">
+        <div class="breakdown-row breakdown-mk"><span class="bl" data-i18n="bMkShare">MK Share</span><span class="bv" id="bMk">—</span></div>
+        <div class="breakdown-row breakdown-glg"><span class="bl" data-i18n="bGlgShare">GLG Share</span><span class="bv" id="bGlg">—</span></div>
+        <div class="breakdown-row"><span class="bl" data-i18n="lblCollect">To Be Collected</span><span class="bv" id="bCollect">—</span></div>
+      </div>
+    </div>
+    <div class="card company-only">
+      <div class="card-title" data-i18n="cardAnalytics">GLG Analytics</div>
+      <div class="card-body" style="padding-top:8px">
+        <div class="analytics-row"><span class="al" data-i18n="aGlgCos">GLG CoS</span><span class="av" id="aGlgCos">—</span></div>
+        <div class="analytics-row"><span class="al" data-i18n="aGlgPct">GLG CoS %</span><span class="av" id="aGlgPct">—</span></div>
+        <div class="analytics-row"><span class="al" data-i18n="aGlgMargin">GLG Gross Margin</span><span class="av" id="aGlgMargin">—</span></div>
+        <div class="analytics-row"><span class="al" data-i18n="aMkMargin">MK Gross Margin</span><span class="av" id="aMkMargin">—</span></div>
       </div>
     </div>
   </div>
@@ -393,7 +431,12 @@ const T = {
     cardAnalytics:'GLG Analytics', aGlgCos:'GLG CoS', aGlgPct:'GLG CoS %',
     aGlgMargin:'GLG Gross Margin', aMkMargin:'MK Gross Margin',
     cardSave:'Save to Google Sheet', connected:'Connected to GLG Google Sheet.',
-    submitBtn:'✓  Accept & Submit', submitBtnEdit:'✓  Update & Resubmit',
+    submitBtn:'✓  Accept & Submit', submitBtnEdit:'✓  Update & Resubmit', submitBtnConfirm:'✓  Confirm Sold',
+    quoteBtn:'📋  Save as Quote',
+    quoteBannerText:'Confirming quote', quoteBannerSub:'review details then confirm as sold to send to Google Sheet',
+    cancelQuote:'✕ Cancel',
+    historyQuotes:'Quotes', historySold:'Sold',
+    noQuotes:'No saved quotes.', noSold:'No sold records yet.',
     historyTitle:'Submission History', refresh:'↻ Refresh', clearCache:'Clear local cache',
     marginSuffix:'% margin', suggestedPrefix:'Suggested: ',
     editBannerText:'Editing previous quote', editBannerSub:'make changes and resubmit to save a new record',
@@ -430,7 +473,12 @@ const T = {
     cardAnalytics:'Analityka GLG', aGlgCos:'GLG KWS', aGlgPct:'GLG KWS %',
     aGlgMargin:'Marża brutto GLG', aMkMargin:'Marża brutto MK',
     cardSave:'Zapisz do Arkusza Google', connected:'Połączono z arkuszem GLG.',
-    submitBtn:'✓  Akceptuj i wyślij', submitBtnEdit:'✓  Aktualizuj i wyślij',
+    submitBtn:'✓  Akceptuj i wyślij', submitBtnEdit:'✓  Aktualizuj i wyślij', submitBtnConfirm:'✓  Potwierdź sprzedaż',
+    quoteBtn:'📋  Zapisz jako wycenę',
+    quoteBannerText:'Potwierdzanie wyceny', quoteBannerSub:'sprawdź szczegóły i potwierdź sprzedaż',
+    cancelQuote:'✕ Anuluj',
+    historyQuotes:'Wyceny', historySold:'Sprzedane',
+    noQuotes:'Brak zapisanych wycen.', noSold:'Brak rekordów sprzedaży.',
     historyTitle:'Historia zgłoszeń', refresh:'↻ Odśwież', clearCache:'Wyczyść pamięć',
     marginSuffix:'% marży', suggestedPrefix:'Sugerowana: ',
     editBannerText:'Edycja poprzedniej wyceny', editBannerSub:'wprowadź zmiany i wyślij ponownie',
@@ -483,6 +531,10 @@ function setLang(lang) {
   document.getElementById('btnViewCo').textContent = T[lang].viewCompany;
   document.getElementById('btnViewCu').textContent = T[lang].viewCustomer;
   document.getElementById('customerBanner').querySelector('[data-i18n="customerBannerText"]').textContent = T[lang].customerBannerText;
+  document.getElementById('quoteBtnLabel').textContent = T[lang].quoteBtn;
+  // Update submit label respecting current mode
+  const lbl = quoteMode ? T[lang].submitBtnConfirm : editMode ? T[lang].submitBtnEdit : T[lang].submitBtn;
+  document.getElementById('submitBtnLabel').textContent = lbl;
 
   // Re-render history table headers if open
   if (window._historyRecords && document.getElementById('historyBody').classList.contains('open')) {
@@ -493,8 +545,8 @@ function setLang(lang) {
 }
 
 // ── Option toggles ────────────────────────────────────────────
-let monumentType  = 'display'; // 'display' | 'custom'
-let paymentMethod = 'cash';    // 'cash' | 'transfer'
+let monumentType  = null; // null | 'display' | 'custom' — mandatory
+let paymentMethod = null;    // null | 'cash' | 'transfer' — required only when deposit > 0
 
 function selectMonumentType(val) {
   monumentType = val;
@@ -503,9 +555,27 @@ function selectMonumentType(val) {
 }
 
 function selectPaymentMethod(val) {
-  paymentMethod = val;
-  document.getElementById('payCash').classList.toggle('selected', val === 'cash');
-  document.getElementById('payTransfer').classList.toggle('selected', val === 'transfer');
+  // Toggle off if already selected (allow deselection)
+  if(paymentMethod === val){
+    paymentMethod = null;
+    document.getElementById('payCash').classList.remove('selected');
+    document.getElementById('payTransfer').classList.remove('selected');
+  } else {
+    paymentMethod = val;
+    document.getElementById('payCash').classList.toggle('selected', val === 'cash');
+    document.getElementById('payTransfer').classList.toggle('selected', val === 'transfer');
+  }
+}
+
+function onDepositInput(){
+  calculate();
+  const hasDeposit = parseFloat(document.getElementById('deposit').value) > 0;
+  document.getElementById('paymentMethodWrap').style.display = hasDeposit ? 'block' : 'none';
+  if(!hasDeposit){
+    paymentMethod = null;
+    document.getElementById('payCash').classList.remove('selected');
+    document.getElementById('payTransfer').classList.remove('selected');
+  }
 }
 
 
@@ -685,6 +755,71 @@ function clearResults(){
   });
 }
 
+// ── Quote mode ────────────────────────────────────────────────
+let quoteMode = false;
+let activeQuoteId = null; // localStorage key of the quote being confirmed
+
+const QUOTES_KEY = 'glg_quotes';
+
+function loadQuotes(){
+  try { return JSON.parse(localStorage.getItem(QUOTES_KEY) || '[]'); } catch(e){ return []; }
+}
+
+function saveAsQuote(){
+  if(!document.getElementById('salesPrice').value || !window._calc){
+    setStatus('error','⚠ ' + (currentLang==='PL' ? 'Uzupełnij kalkulator przed zapisaniem.' : 'Please complete the calculator before saving.'));
+    return;
+  }
+  if(!monumentType){
+    setStatus('error','⚠ ' + (currentLang==='PL' ? 'Wybierz typ nagrobka.' : 'Please select a Monument Type before saving.'));
+    return;
+  }
+  const data = getFormData();
+  data._savedAt = new Date().toISOString();
+  data._quoteId = 'q_' + Date.now();
+  data._status  = 'quote';
+  const quotes = loadQuotes();
+  quotes.unshift(data);
+  try { localStorage.setItem(QUOTES_KEY, JSON.stringify(quotes.slice(0,100))); } catch(e){}
+  setStatus('success', currentLang==='PL' ? '📋 Wycena zapisana lokalnie.' : '📋 Quote saved locally.');
+  renderHistory();
+  // Open history to show it
+  document.getElementById('historyBody').classList.add('open');
+  document.getElementById('historyChevron').classList.add('open');
+  fetchAndRenderHistory();
+}
+
+function loadQuoteForConfirmation(quoteId){
+  const quotes = loadQuotes();
+  const record = quotes.find(q => q._quoteId === quoteId);
+  if(!record) return;
+  activeQuoteId = quoteId;
+  quoteMode = true;
+  // Load all fields (reuse existing loadIntoForm logic)
+  loadIntoForm(record);
+  // Override mode flags set by loadIntoForm — clear edit mode, set quote mode
+  editMode = false;
+  document.getElementById('editBanner').style.display = 'none';
+  document.getElementById('quoteBanner').classList.add('visible');
+  document.getElementById('submitBtnLabel').textContent = T[currentLang].submitBtnConfirm;
+  document.getElementById('quoteBtn').style.display = 'none';
+}
+
+function cancelQuote(){
+  quoteMode = false;
+  activeQuoteId = null;
+  document.getElementById('quoteBanner').classList.remove('visible');
+  document.getElementById('submitBtnLabel').textContent = T[currentLang].submitBtn;
+  document.getElementById('quoteBtn').style.display = '';
+  // Reset form
+  cancelEdit();
+}
+
+function removeQuote(quoteId){
+  const quotes = loadQuotes().filter(q => q._quoteId !== quoteId);
+  try { localStorage.setItem(QUOTES_KEY, JSON.stringify(quotes)); } catch(e){}
+}
+
 // ── Edit from history ─────────────────────────────────────────
 let editMode = false;
 
@@ -726,7 +861,15 @@ function loadIntoForm(record) {
     document.getElementById('deposit').value = record.deposit;
 
   if(record.monumentType) selectMonumentType(record.monumentType.includes('STOCK') ? 'display' : 'custom');
-  if(record.paymentMethod) selectPaymentMethod(record.paymentMethod === 'Cash' ? 'cash' : 'transfer');
+  if(record.paymentMethod){
+    const pm = record.paymentMethod === 'Cash' ? 'cash' : record.paymentMethod === 'Bank Transfer' ? 'transfer' : null;
+    if(pm){
+      paymentMethod = pm;
+      document.getElementById('payCash').classList.toggle('selected', pm === 'cash');
+      document.getElementById('payTransfer').classList.toggle('selected', pm === 'transfer');
+      document.getElementById('paymentMethodWrap').style.display = 'block';
+    }
+  }
 
   // Sales price
   priceTouched = true;
@@ -760,8 +903,13 @@ function cancelEdit(){
   document.getElementById('deposit').value = '';
   document.getElementById('orderDate').value = new Date().toISOString().slice(0,10);
   document.getElementById('finishBar').style.display = 'none';
-  selectMonumentType('display');
-  selectPaymentMethod('cash');
+  monumentType = null;
+  document.getElementById('mTypeDisplay').classList.remove('selected');
+  document.getElementById('mTypeCustom').classList.remove('selected');
+  paymentMethod = null;
+  document.getElementById('payCash').classList.remove('selected');
+  document.getElementById('payTransfer').classList.remove('selected');
+  document.getElementById('paymentMethodWrap').style.display = 'none';
   priceTouched = false;
   priceOverridden = false;
   updateOverrideUI();
@@ -793,8 +941,8 @@ function getFormData(){
     additionalCosts: document.getElementById('addCosts').value,
     salesPrice:      document.getElementById('salesPrice').value,
     deposit:         document.getElementById('deposit').value,
-    monumentType:    monumentType === 'display' ? 'STOCK Monument Deposit' : 'Custom Monument Deposit',
-    paymentMethod:   paymentMethod === 'cash' ? 'Cash' : 'Bank Transfer',
+    monumentType:    monumentType === 'display' ? 'STOCK Monument Deposit' : monumentType === 'custom' ? 'Custom Monument Deposit' : '',
+    paymentMethod:   paymentMethod === 'cash' ? 'Cash' : paymentMethod === 'transfer' ? 'Bank Transfer' : '',
     totalProfit:     window._calc.totalProfit,
     profitMargin:    window._calc.margin,
     mkShare:         window._calc.mkShare,
@@ -814,6 +962,10 @@ async function submitToSheet(){
     setStatus('error','⚠ ' + (currentLang === 'PL' ? 'Uzupełnij kalkulator przed wysłaniem.' : 'Please complete the calculator before submitting.'));
     return;
   }
+  if(!monumentType){
+    setStatus('error','⚠ ' + (currentLang === 'PL' ? 'Wybierz typ nagrobka.' : 'Please select a Monument Type before submitting.'));
+    return;
+  }
   btn.disabled = true;
   document.getElementById('submitBtnLabel').textContent = currentLang === 'PL' ? 'Wysyłanie…' : 'Submitting…';
   setStatus('info', currentLang === 'PL' ? 'Wysyłanie do Google Sheets…' : 'Sending to Google Sheets…');
@@ -826,11 +978,18 @@ async function submitToSheet(){
       editMode = false;
       document.getElementById('editBanner').style.display = 'none';
     }
+    if(quoteMode && activeQuoteId){
+      removeQuote(activeQuoteId);
+      quoteMode = false;
+      activeQuoteId = null;
+      document.getElementById('quoteBanner').classList.remove('visible');
+      document.getElementById('quoteBtn').style.display = '';
+    }
   } catch(e) {
     setStatus('error', '✗ ' + e.message);
   }
   btn.disabled = false;
-  document.getElementById('submitBtnLabel').textContent = T[currentLang].submitBtn;
+  document.getElementById('submitBtnLabel').textContent = quoteMode ? T[currentLang].submitBtnConfirm : T[currentLang].submitBtn;
 }
 
 function iframePost(url, data) {
@@ -888,8 +1047,8 @@ function toggleHistory(){
 }
 
 async function fetchAndRenderHistory(){
-  document.getElementById('historyContent').innerHTML =
-    '<div class="history-empty">' + T[currentLang].loading + '</div>';
+  // Render quotes from localStorage immediately while sheet loads
+  renderHistoryRows([], true);
 
   const sheetId = document.getElementById('sheetId').value.trim();
   if(!sheetId) return;
@@ -953,14 +1112,24 @@ async function fetchAndRenderHistory(){
   document.head.appendChild(s);
 }
 
-function renderHistoryRows(records, isCache){
+function renderHistoryRows(soldRecords, isCache){
   const t = T[currentLang];
   const container = document.getElementById('historyContent');
-  if(!records.length){
-    container.innerHTML = '<div class="history-empty">' + t.noRecords + '</div>';
-    return;
-  }
-  const rows = records.map((d, i) => {
+  const quotes = loadQuotes();
+
+  const sourceLabel = isCache
+    ? '<span style="color:#b8860b;font-size:10px">⟳ Loading live data…</span>'
+    : '<span style="color:#2d7a4a;font-size:10px">● Live from Google Sheets</span>';
+
+  const tableHead = `<thead><tr>
+    <th>${t.hdrDate}</th><th>${t.hdrCustomer}</th><th>${t.hdrCategory}</th>
+    <th style="text-align:right">${t.hdrSales}</th>
+    <th style="text-align:right">${t.hdrSlab}</th>
+    <th style="text-align:right">${t.hdrProfit}</th>
+    <th style="text-align:right">${t.hdrMargin}</th>
+  </tr></thead>`;
+
+  function buildRow(d, onclick, isQuote){
     const ts = d['_timestamp'] || d['_savedAt'] || '';
     const date = ts ? new Date(ts).toLocaleDateString('en-GB',{
       day:'2-digit', month:'short', year:'numeric', timeZone:'Europe/Warsaw'
@@ -968,55 +1137,79 @@ function renderHistoryRows(records, isCache){
     const profit = typeof d.totalProfit === 'number' ? d.totalProfit : parseFloat(d.totalProfit) || 0;
     const profitClass = profit >= 0 ? 'profit-pos' : 'profit-neg';
     const margin = typeof d.profitMargin === 'number' ? d.profitMargin : parseFloat(d.profitMargin) || 0;
-    const cat = d.category || '—';
-    return `<tr class="history-row" onclick="loadIntoForm(window._historyRecords[${i}])" title="${escHtml(t.loadTitle)}">
-      <td class="muted" style="white-space:nowrap">${date}</td>
-      <td>${escHtml(d.customerName || '—')}${d.notes ? '<br><span style="color:#aaa;font-size:11px;font-style:italic">'+escHtml(d.notes)+'</span>' : ''}</td>
-      <td class="muted">${escHtml(cat)}</td>
+    const rowClass = isQuote ? 'history-row quote-row' : 'history-row';
+    const dot = `<span class="status-dot ${isQuote?'quote':'sold'}"></span>`;
+    return `<tr class="${rowClass}" onclick="${onclick}" title="${escHtml(t.loadTitle)}">
+      <td class="muted" style="white-space:nowrap">${dot}${date}</td>
+      <td>${escHtml(d.customerName||'—')}${d.notes?'<br><span style="color:#aaa;font-size:11px;font-style:italic">'+escHtml(d.notes)+'</span>':''}</td>
+      <td class="muted">${escHtml(d.category||'—')}</td>
       <td class="num">${fmtH(d.salesPrice)}</td>
       <td class="num">${fmtH(d.slabCost)}</td>
       <td class="${profitClass}">${fmtH(profit)}</td>
       <td class="num">${margin.toFixed(1)}%</td>
     </tr>`;
-  }).join('');
+  }
 
-  const sourceLabel = isCache
-    ? '<span style="color:#b8860b;font-size:10px">⟳ Loading live data…</span>'
-    : '<span style="color:#2d7a4a;font-size:10px">● Live from Google Sheets</span>';
+  // ── Quotes section ────────────────────────────────────────
+  let quotesHTML = '';
+  if(quotes.length){
+    const qRows = quotes.map(d =>
+      buildRow(d, `loadQuoteForConfirmation(${JSON.stringify(d._quoteId)})`, true)
+    ).join('');
+    quotesHTML = `
+      <div class="history-section-title quotes">
+        ${t.historyQuotes} <span class="count">${quotes.length}</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="history-table"><${tableHead}<tbody>${qRows}</tbody></table>
+      </div>`;
+  }
+
+  // ── Sold section ──────────────────────────────────────────
+  let soldHTML = '';
+  if(soldRecords.length){
+    window._historyRecords = soldRecords;
+    const sRows = soldRecords.map((d,i) =>
+      buildRow(d, `loadIntoForm(window._historyRecords[${i}])`, false)
+    ).join('');
+    soldHTML = `
+      <div class="history-section-title sold">
+        ${t.historySold} <span class="count">${soldRecords.length}</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="history-table">${tableHead}<tbody>${sRows}</tbody></table>
+      </div>`;
+  }
+
+  if(!quotes.length && !soldRecords.length){
+    container.innerHTML = '<div class="history-empty">' + t.noRecords + '</div>';
+    return;
+  }
 
   container.innerHTML = `
     <div style="padding:8px 18px 4px;display:flex;justify-content:flex-end">
       <span id="historyLiveNote">${sourceLabel}</span>
     </div>
-    <div style="overflow-x:auto">
-      <table class="history-table">
-        <thead><tr>
-          <th>${t.hdrDate}</th>
-          <th>${t.hdrCustomer}</th>
-          <th>${t.hdrCategory}</th>
-          <th style="text-align:right">${t.hdrSales}</th>
-          <th style="text-align:right">${t.hdrSlab}</th>
-          <th style="text-align:right">${t.hdrProfit}</th>
-          <th style="text-align:right">${t.hdrMargin}</th>
-        </tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>`;
+    ${quotesHTML}
+    ${soldHTML}`;
 }
 
 function clearHistory(){
   if(!confirm(currentLang === 'PL'
-    ? 'Wyczyści to tylko lokalną pamięć podręczną. Rekordy w Google Sheets nie zostaną usunięte.\n\nKontynuować?'
-    : 'This clears your local browser cache only. Records in Google Sheets are unaffected.\n\nContinue?')) return;
+    ? 'Wyczyści to lokalną pamięć podręczną (wyceny i rekordy sprzedaży). Dane w Google Sheets nie zostaną usunięte.\n\nKontynuować?'
+    : 'This clears your local cache — both saved quotes and sold records. Google Sheet data is unaffected.\n\nContinue?')) return;
   try { localStorage.removeItem(HISTORY_KEY); } catch(e){}
+  try { localStorage.removeItem(QUOTES_KEY); } catch(e){}
   window._historyRecords = [];
   renderHistoryRows([], false);
   document.getElementById('historyCount').textContent = '—';
 }
 
 function renderHistory(){
-  const count = loadLocalHistory().length;
-  document.getElementById('historyCount').textContent = count || '—';
+  const soldCount = loadLocalHistory().length;
+  const quoteCount = loadQuotes().length;
+  const total = soldCount + quoteCount;
+  document.getElementById('historyCount').textContent = total || '—';
 }
 
 function fmtH(n){
