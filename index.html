@@ -399,7 +399,7 @@ body.customer-view .history-wrap{display:none}
     <div id="historyContent"></div>
     <div class="history-actions">
       <button class="btn-refresh-history" onclick="fetchAndRenderHistory()" data-i18n="refresh">↻ Refresh</button>
-      <button class="btn-clear-history" onclick="clearHistory()" data-i18n="clearCache">Clear local cache</button>
+      <button class="btn-clear-history" onclick="clearHistory()" data-i18n="clearCache">↺ Reload</button>
     </div>
   </div>
 </div>
@@ -757,13 +757,13 @@ function clearResults(){
 
 // ── Quote mode ────────────────────────────────────────────────
 let quoteMode = false;
-let activeQuoteId = null; // localStorage key of the quote being confirmed
-
-const QUOTES_KEY = 'glg_quotes';
+let activeQuoteId = null;
 
 function loadQuotes(){
-  try { return JSON.parse(localStorage.getItem(QUOTES_KEY) || '[]'); } catch(e){ return []; }
+  return window._quoteRecords || [];
 }
+
+function removeQuote(){ } // handled server-side via confirmSold action
 
 function saveAsQuote(){
   if(!document.getElementById('salesPrice').value || !window._calc){
@@ -775,26 +775,17 @@ function saveAsQuote(){
     return;
   }
   const data = getFormData();
-  const quoteId = 'q_' + Date.now();
   data._action  = 'saveQuote';
-  data._quoteId = quoteId;
-  data._savedAt = new Date().toISOString();
-  data._status  = 'quote';
+  data._quoteId = 'q_' + Date.now();
 
-  // Save to localStorage immediately for instant feedback
-  const localQuotes = loadQuotes();
-  localQuotes.unshift(data);
-  try { localStorage.setItem(QUOTES_KEY, JSON.stringify(localQuotes.slice(0,100))); } catch(e){}
-
-  // Also POST to Google Sheet (async — fire and forget)
   const url = document.getElementById('scriptUrl').value.trim();
   if(url) iframePost(url, data);
 
   setStatus('success', currentLang==='PL' ? '📋 Wycena zapisana.' : '📋 Quote saved.');
-  renderHistory();
   document.getElementById('historyBody').classList.add('open');
   document.getElementById('historyChevron').classList.add('open');
-  fetchAndRenderHistory();
+  // Refresh after delay to allow Apps Script to write
+  setTimeout(function(){ fetchAndRenderHistory(); }, 2000);
 }
 
 function loadQuoteForConfirmation(index){
@@ -1035,34 +1026,41 @@ async function submitToSheet(){
     }
     await iframePost(url, data);
     setStatus('success', currentLang === 'PL' ? '✓ Rekord zapisany pomyślnie.' : '✓ Record saved to Google Sheet successfully.');
-    saveToHistory(data);
     if(editMode){
       editMode = false;
       document.getElementById('editBanner').style.display = 'none';
     }
     if(quoteMode && activeQuoteId){
-      removeQuote(activeQuoteId);
       quoteMode = false;
       activeQuoteId = null;
       document.getElementById('quoteBanner').classList.remove('visible');
       document.getElementById('quoteBtn').style.display = '';
     }
+    // Refresh history from sheet after a short delay (allow Apps Script to complete)
+    setTimeout(function(){
+      if(document.getElementById('historyBody').classList.contains('open')){
+        fetchAndRenderHistory();
+      }
+    }, 2000);
   } catch(e) {
     setStatus('error', '✗ ' + e.message);
   }
   btn.disabled = false;
-  document.getElementById('submitBtnLabel').textContent = quoteMode ? T[currentLang].submitBtnConfirm : T[currentLang].submitBtn;
+  document.getElementById('submitBtnLabel').textContent = T[currentLang].submitBtn;
 }
 
+// Always creates a fresh iframe to avoid onload firing prematurely from previous POST
 function iframePost(url, data) {
   return new Promise(function(resolve) {
-    let iframe = document.getElementById('_submitFrame');
-    if(!iframe){
-      iframe = document.createElement('iframe');
-      iframe.id = '_submitFrame'; iframe.name = '_submitFrame';
-      iframe.style.display = 'none';
-      document.body.appendChild(iframe);
-    }
+    // Remove any existing submit frame
+    const old = document.getElementById('_submitFrame');
+    if(old) old.parentNode.removeChild(old);
+
+    const iframe = document.createElement('iframe');
+    iframe.id = '_submitFrame'; iframe.name = '_submitFrame';
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+
     const form = document.createElement('form');
     form.method = 'POST'; form.action = url; form.target = '_submitFrame';
     const input = document.createElement('input');
@@ -1086,19 +1084,9 @@ function setStatus(type, msg){
   el.textContent = msg;
 }
 
-// ── History ───────────────────────────────────────────────────
-const HISTORY_KEY = 'glg_submissions';
-
-function loadLocalHistory(){
-  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch(e){ return []; }
-}
-
-function saveToHistory(data){
-  const h = loadLocalHistory();
-  h.unshift({ ...data, _savedAt: new Date().toISOString() });
-  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(h.slice(0,200))); } catch(e){}
-  renderHistory();
-}
+// ── History — data comes from Google Sheets only ──────────────
+function loadLocalHistory(){ return []; }
+function saveToHistory(){ }
 
 function toggleHistory(){
   const body    = document.getElementById('historyBody');
@@ -1172,18 +1160,8 @@ async function fetchAndRenderHistory(){
     gvizLoad('Records', KEY_MAP_RECORDS),
     gvizLoad('Quotes',  KEY_MAP_QUOTES)
   ]).then(function(results){
-    const soldRecords  = results[0];
-    const sheetQuotes  = results[1];
-
-    // Merge sheet quotes with any local-only quotes (not yet synced)
-    const localQuotes  = loadQuotes();
-    const sheetIds     = new Set(sheetQuotes.map(q => q._quoteId).filter(Boolean));
-    const localOnly    = localQuotes.filter(q => q._quoteId && !sheetIds.has(q._quoteId));
-    const allQuotes    = sheetQuotes.concat(localOnly);
-
-    // Update localStorage to reflect sheet state (remove confirmed/deleted)
-    const merged = allQuotes.map(q => Object.assign({}, q, { _savedAt: q._savedAt || q._timestamp }));
-    try { localStorage.setItem(QUOTES_KEY, JSON.stringify(merged)); } catch(e){}
+    const soldRecords = results[0];
+    const allQuotes   = results[1];
 
     window._historyRecords = soldRecords;
     window._quoteRecords   = allQuotes;
@@ -1277,19 +1255,18 @@ function renderHistoryRows(soldRecords, isCache, quotesOverride){
 }
 
 function clearHistory(){
-  if(!confirm(currentLang === 'PL'
-    ? 'Wyczyści to lokalną pamięć podręczną (wyceny i rekordy sprzedaży). Dane w Google Sheets nie zostaną usunięte.\n\nKontynuować?'
-    : 'This clears your local cache — both saved quotes and sold records. Google Sheet data is unaffected.\n\nContinue?')) return;
-  try { localStorage.removeItem(HISTORY_KEY); } catch(e){}
-  try { localStorage.removeItem(QUOTES_KEY); } catch(e){}
+  // No local cache to clear — data lives in Google Sheets only
+  // Just reset the in-memory state and refresh from sheet
   window._historyRecords = [];
-  renderHistoryRows([], false);
+  window._quoteRecords   = [];
+  renderHistoryRows([], false, []);
   document.getElementById('historyCount').textContent = '—';
+  fetchAndRenderHistory();
 }
 
 function renderHistory(){
-  const soldCount = loadLocalHistory().length;
-  const quoteCount = loadQuotes().length;
+  const quoteCount = (window._quoteRecords || []).length;
+  const soldCount  = (window._historyRecords || []).length;
   const total = soldCount + quoteCount;
   document.getElementById('historyCount').textContent = total || '—';
 }
