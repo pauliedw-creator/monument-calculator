@@ -288,7 +288,7 @@ body.customer-view .history-wrap{display:none}
         <select id="category" onchange="onCatChange()">
           <option value="" data-i18n-opt="optSelect">— Select a category —</option>
           <option value="3998|concrete" data-i18n-opt="cat1">Category I — Small urn-type monument (60 x 120 cm)</option>
-          <option value="6021|concrete" data-i18n-opt="cat2">Category II — Standard simple monument (120 x 250 cm, plate &amp; pillar)</option>
+          <option value="6021|concrete" data-i18n-opt="cat2">Category II — Standard simple monument (120 x 250 cm, plate and pillar)</option>
           <option value="6791|concrete" data-i18n-opt="cat3">Category III — Standard simple monument (120 x 250 cm, from ground on base)</option>
           <option value="10837|granite" data-i18n-opt="cat4">Category IV — Complex monument</option>
           <option value="6791|concrete" data-i18n-opt="cat5">Category V — Double simple monument (230 x 250 cm)</option>
@@ -418,7 +418,7 @@ const T = {
     cardMonument:'Monument & Costs', labelCategory:'Monument Category',
     optSelect:'— Select a category —',
     cat1:'Category I — Small urn-type monument (60 x 120 cm)',
-    cat2:'Category II — Standard simple monument (120 x 250 cm, plate & pillar)',
+    cat2:'Category II — Standard simple monument (120 x 250 cm, plate and pillar)',
     cat3:'Category III — Standard simple monument (120 x 250 cm, from ground on base)',
     cat4:'Category IV — Complex monument',
     cat5:'Category V — Double simple monument (230 x 250 cm)',
@@ -785,7 +785,8 @@ function saveAsQuote(){
   document.getElementById('historyBody').classList.add('open');
   document.getElementById('historyChevron').classList.add('open');
   // Refresh after delay to allow Apps Script to write
-  setTimeout(function(){ fetchAndRenderHistory(); }, 2000);
+  setTimeout(function(){ fetchAndRenderHistory(); }, 4000);
+  setTimeout(function(){ fetchAndRenderHistory(); }, 9000);
 }
 
 function loadQuoteForConfirmation(index){
@@ -1041,12 +1042,11 @@ async function submitToSheet(){
       document.getElementById('quoteBanner').classList.remove('visible');
       document.getElementById('quoteBtn').style.display = '';
     }
-    // Refresh history from sheet after a short delay (allow Apps Script to complete)
-    setTimeout(function(){
-      if(document.getElementById('historyBody').classList.contains('open')){
-        fetchAndRenderHistory();
-      }
-    }, 2000);
+    // Open history and refresh at 4s and 9s to catch slower Apps Script responses
+    document.getElementById('historyBody').classList.add('open');
+    document.getElementById('historyChevron').classList.add('open');
+    setTimeout(function(){ fetchAndRenderHistory(); }, 4000);
+    setTimeout(function(){ fetchAndRenderHistory(); }, 9000);
   } catch(e) {
     setStatus('error', '✗ ' + e.message);
   }
