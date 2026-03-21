@@ -1024,14 +1024,9 @@ async function submitToSheet(){
     if(quoteMode && activeQuoteId){
       data._action  = 'confirmSold';
       data._quoteId = activeQuoteId;
-      // For confirmSold, use fetch (not iframe) so we can read the response
-      const url2 = document.getElementById('scriptUrl').value.trim();
-      const resp = await iframePostWithResponse(url2, data);
-      setStatus('success', '✓ ' + JSON.stringify(resp).slice(0,120));
-    } else {
-      await iframePost(document.getElementById('scriptUrl').value.trim(), data);
-      setStatus('success', currentLang === 'PL' ? '✓ Rekord zapisany pomyślnie.' : '✓ Record saved to Google Sheet successfully.');
     }
+    await iframePost(url, data);
+    setStatus('success', currentLang === 'PL' ? '✓ Rekord zapisany pomyślnie.' : '✓ Record saved to Google Sheet successfully.');
     if(editMode){
       editMode = false;
       document.getElementById('editBanner').style.display = 'none';
@@ -1054,37 +1049,6 @@ async function submitToSheet(){
   document.getElementById('submitBtnLabel').textContent = T[currentLang].submitBtn;
 }
 
-// iframePostWithResponse — POSTs and attempts to read response JSON
-// Falls back gracefully if cross-origin blocks access
-function iframePostWithResponse(url, data) {
-  return new Promise(function(resolve) {
-    const old = document.getElementById('_submitFrame');
-    if(old) old.parentNode.removeChild(old);
-    const iframe = document.createElement('iframe');
-    iframe.id = '_submitFrame'; iframe.name = '_submitFrame';
-    iframe.style.display = 'none';
-    document.body.appendChild(iframe);
-    const form = document.createElement('form');
-    form.method = 'POST'; form.action = url; form.target = '_submitFrame';
-    const input = document.createElement('input');
-    input.type = 'hidden'; input.name = 'payload'; input.value = JSON.stringify(data);
-    form.appendChild(input);
-    document.body.appendChild(form);
-    iframe.onload = function(){
-      try {
-        const text = iframe.contentDocument.body.innerText || iframe.contentDocument.body.textContent;
-        const json = JSON.parse(text);
-        try{ document.body.removeChild(form); }catch(e){}
-        resolve(json);
-      } catch(e){
-        try{ document.body.removeChild(form); }catch(e2){}
-        resolve({ status: 'ok', note: 'response unreadable (cross-origin)' });
-      }
-    };
-    form.submit();
-    setTimeout(function(){ try{ document.body.removeChild(form); }catch(e){} resolve({ status: 'timeout' }); }, 6000);
-  });
-}
 function iframePost(url, data) {
   return new Promise(function(resolve) {
     // Remove any existing submit frame
