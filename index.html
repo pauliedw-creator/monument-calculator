@@ -256,10 +256,6 @@ body.customer-view .history-wrap{display:none}
     <div class="stat-label" data-i18n="statMk">MK Cost</div>
     <div class="stat-value" id="sMk">— <span>zł</span></div>
   </div>
-  <div class="stat-card company-only">
-    <div class="stat-label" data-i18n="statMkGross">MK Gross Margin</div>
-    <div class="stat-value" id="sMkGross">— <span>zł</span></div>
-  </div>
 </div>
 
 <div class="body-wrap">
@@ -296,24 +292,26 @@ body.customer-view .history-wrap{display:none}
           <option value="0|none" data-i18n-opt="cat7">CUSTOM PROJECT</option>
         </select>
         <div class="finish-bar" id="finishBar"></div>
+        <input type="hidden" id="glgCos" value="200">
         <div class="two-col customer-hide" style="margin-top:22px">
           <div>
             <label class="field-label" data-i18n="labelMkCosts">MK Costs (zł)</label>
             <input type="number" id="mkCosts" placeholder="Auto from category" data-i18n-ph="phMkCosts" oninput="calculate()">
           </div>
           <div>
-            <label class="field-label" data-i18n="labelGlgCos">GLG CoS — Fixed</label>
-            <input type="number" id="glgCos" value="200" readonly>
+            <label class="field-label" data-i18n="labelSlab">Slab Cost (zł)</label>
+            <input type="number" id="slabCost" placeholder="0" oninput="calculate()">
           </div>
         </div>
         <div class="two-col" style="margin-top:22px">
           <div>
-            <label class="field-label" data-i18n="labelSlab">Slab Cost (zł)</label>
-            <input type="number" id="slabCost" placeholder="0" oninput="calculate()">
-          </div>
-          <div>
-            <label class="field-label" data-i18n="labelAdd">Additional Costs (zł)</label>
+            <label class="field-label" data-i18n="labelAdd">GLG Additional Costs (zł)</label>
             <input type="number" id="addCosts" placeholder="0" oninput="calculate()">
+          </div>
+          <div class="customer-hide">
+            <label class="field-label" data-i18n="labelMkAdd" style="color:#b8860b">MK Additional Costs (zł)</label>
+            <input type="number" id="mkAddCosts" placeholder="0" oninput="calculate()"
+              style="border-color:#e8c96a;background:#fffbef">
           </div>
         </div>
       </div>
@@ -426,7 +424,7 @@ const T = {
     cat6:'Category VI — Double complex monument (230 x 250 cm)',
     cat7:'CUSTOM PROJECT',
     labelMkCosts:'MK Costs (zł)', phMkCosts:'Auto from category', labelGlgCos:'GLG CoS — Fixed',
-    labelSlab:'Slab Cost (zł)', labelAdd:'Additional Costs (zł)',
+    labelSlab:'Slab Cost (zł)', labelAdd:'GLG Additional Costs (zł)', labelMkAdd:'MK Additional Costs (zł)',
     cardPricing:'Pricing', labelSalesPrice:'Sales Price (zł)', override:'Override',
     reset:'↺ Reset', phSalesPrice:'Auto-calculated', labelDeposit:'Deposit Taken (zł)',
     cardBreakdown:'Breakdown', bMkShare:'MK Share', bGlgShare:'GLG Share', lblCollect:'To Be Collected',
@@ -469,7 +467,7 @@ const T = {
     cat6:'Kategoria VI — Podwójny nagrobek złożony (230 x 250 cm)',
     cat7:'CUSTOM PROJECT',
     labelMkCosts:'Koszty MK (zł)', phMkCosts:'Auto z kategorii', labelGlgCos:'GLG KWS — Stały',
-    labelSlab:'Koszt płyty (zł)', labelAdd:'Koszty dodatkowe (zł)',
+    labelSlab:'Koszt płyty (zł)', labelAdd:'Dodatkowe koszty GLG (zł)', labelMkAdd:'Dodatkowe koszty MK (zł)',
     cardPricing:'Wycena', labelSalesPrice:'Cena sprzedaży (zł)', override:'Ręczna',
     reset:'↺ Resetuj', phSalesPrice:'Obliczane automatycznie', labelDeposit:'Zaliczka (zł)',
     cardBreakdown:'Podział', bMkShare:'Udział MK', bGlgShare:'Udział GLG', lblCollect:'Do pobrania',
@@ -618,8 +616,8 @@ function fmtCard(n){
 }
 
 function getSuggested(){
-  const mk=v('mkCosts'), glg=v('glgCos'), slab=v('slabCost'), add=v('addCosts');
-  const cost = mk + glg + slab + add;
+  const mk=v('mkCosts'), mkAdd=v('mkAddCosts'), glg=v('glgCos'), slab=v('slabCost'), add=v('addCosts');
+  const cost = mk + mkAdd + glg + slab + add;
   if(cost === 0) return null;
   return Math.round(cost / 0.63);
 }
@@ -699,11 +697,12 @@ function updateOverrideUI(){
 }
 
 function calculate(){
-  const mk   = v('mkCosts');
-  const glg  = v('glgCos');
-  const slab = v('slabCost');
-  const add  = v('addCosts');
-  const dep  = v('deposit');
+  const mk     = v('mkCosts');
+  const mkAdd  = v('mkAddCosts');
+  const glg    = v('glgCos');
+  const slab   = v('slabCost');
+  const add    = v('addCosts');
+  const dep    = v('deposit');
   const suggested = getSuggested();
 
   if(!priceTouched && suggested !== null){
@@ -711,30 +710,30 @@ function calculate(){
   }
 
   const sale = v('salesPrice');
+  const mkTotal = mk + mkAdd; // MK Costs (zł) in sheet = mk + mkAdd
   if(sale === 0 && mk === 0){ clearResults(); return; }
 
-  const totalCost = mk + glg + slab + add;
+  const totalCost = mkTotal + glg + slab + add;
   const profit    = sale - totalCost;
   const margin    = sale > 0 ? profit / sale * 100 : 0;
-  const mkShare   = mk + profit / 2;
+  const mkShare   = mkTotal + profit / 2;
   const glgShare  = glg + slab + add + profit / 2;
   const collect   = sale - dep;
   const glgCos    = mkShare + slab + add;
   const glgCosPct = sale > 0 ? glgCos / sale * 100 : 0;
   const glgGross  = sale - glgCos;
-  const mkGross   = mkShare - mk;
+  const mkGross   = mkShare - mkTotal;
 
   window._calc = { totalProfit: profit, margin: parseFloat(margin.toFixed(2)),
     mkShare, glgShare, collect, glgCos, glgCosPct: parseFloat(glgCosPct.toFixed(2)),
-    glgGross, mkGross };
+    glgGross, mkGross, mkTotal };
 
   document.getElementById('sSales').innerHTML = fmtCard(sale);
   const profitEl = document.getElementById('sProfit');
   profitEl.innerHTML = fmtCard(profit);
   profitEl.className = 'stat-value ' + (profit >= 0 ? 'green' : 'red');
   document.getElementById('sMargin').textContent = margin.toFixed(1) + T[currentLang].marginSuffix;
-  document.getElementById('sMk').innerHTML = fmtCard(mk);
-  document.getElementById('sMkGross').innerHTML = fmtCard(mkGross);
+  document.getElementById('sMk').innerHTML = fmtCard(mkTotal);
 
   document.getElementById('bMk').textContent = fmt(mkShare);
   document.getElementById('bGlg').textContent = fmt(glgShare);
@@ -754,7 +753,7 @@ function calculate(){
 }
 
 function clearResults(){
-  ['sSales','sProfit','sMk','sMkGross'].forEach(id=>{
+  ['sSales','sProfit','sMk'].forEach(id=>{
     document.getElementById(id).innerHTML = '— <span>zł</span>';
   });
   document.getElementById('sMargin').textContent = '';
@@ -955,6 +954,7 @@ function cancelEdit(){
   document.getElementById('customerName').value = '';
   document.getElementById('notes').value = '';
   document.getElementById('mkCosts').value = '';
+  document.getElementById('mkAddCosts').value = '';
   document.getElementById('slabCost').value = '';
   document.getElementById('addCosts').value = '';
   document.getElementById('salesPrice').value = '';
@@ -993,7 +993,7 @@ function getFormData(){
     notes:           document.getElementById('notes').value,
     category:        catEN,
     finish:          finEN,
-    mkCosts:         document.getElementById('mkCosts').value,
+    mkCosts:         String(v('mkCosts') + v('mkAddCosts')),
     glgCos:          document.getElementById('glgCos').value,
     slabCost:        document.getElementById('slabCost').value,
     additionalCosts: document.getElementById('addCosts').value,
