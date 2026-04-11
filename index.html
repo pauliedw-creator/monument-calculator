@@ -293,6 +293,7 @@ body.customer-view .history-wrap{display:none}
           <option value="10837|granite" data-i18n-opt="cat4">Category IV — Complex monument</option>
           <option value="6791|concrete" data-i18n-opt="cat5">Category V — Double simple monument (230 x 250 cm)</option>
           <option value="10837|granite" data-i18n-opt="cat6">Category VI — Double complex monument (230 x 250 cm)</option>
+          <option value="0|none" data-i18n-opt="cat7">CUSTOM PROJECT</option>
         </select>
         <div class="finish-bar" id="finishBar"></div>
         <div class="two-col customer-hide" style="margin-top:22px">
@@ -423,6 +424,7 @@ const T = {
     cat4:'Category IV — Complex monument',
     cat5:'Category V — Double simple monument (230 x 250 cm)',
     cat6:'Category VI — Double complex monument (230 x 250 cm)',
+    cat7:'CUSTOM PROJECT',
     labelMkCosts:'MK Costs (zł)', phMkCosts:'Auto from category', labelGlgCos:'GLG CoS — Fixed',
     labelSlab:'Slab Cost (zł)', labelAdd:'Additional Costs (zł)',
     cardPricing:'Pricing', labelSalesPrice:'Sales Price (zł)', override:'Override',
@@ -465,6 +467,7 @@ const T = {
     cat4:'Kategoria IV — Nagrobek złożony',
     cat5:'Kategoria V — Podwójny nagrobek prosty (230 x 250 cm)',
     cat6:'Kategoria VI — Podwójny nagrobek złożony (230 x 250 cm)',
+    cat7:'CUSTOM PROJECT',
     labelMkCosts:'Koszty MK (zł)', phMkCosts:'Auto z kategorii', labelGlgCos:'GLG KWS — Stały',
     labelSlab:'Koszt płyty (zł)', labelAdd:'Koszty dodatkowe (zł)',
     cardPricing:'Wycena', labelSalesPrice:'Cena sprzedaży (zł)', override:'Ręczna',
@@ -630,12 +633,17 @@ function onCatChange(){
     calculate(); return;
   }
   const [mk, fin] = sel.value.split('|');
-  document.getElementById('mkCosts').value = mk;
+  document.getElementById('mkCosts').value = mk === '0' ? '' : mk;
   const fb = document.getElementById('finishBar');
-  const finKey = fin.charAt(0).toUpperCase() + fin.slice(1); // 'Concrete' or 'Granite'
-  fb.dataset.finType = finKey;
-  fb.textContent = T[currentLang]['finish' + finKey];
-  fb.style.display = 'block';
+  if(fin === 'none'){
+    fb.style.display = 'none';
+    fb.dataset.finType = '';
+  } else {
+    const finKey = fin.charAt(0).toUpperCase() + fin.slice(1);
+    fb.dataset.finType = finKey;
+    fb.textContent = T[currentLang]['finish' + finKey];
+    fb.style.display = 'block';
+  }
   if(!priceTouched){
     const s = getSuggested();
     document.getElementById('salesPrice').value = s !== null ? s : '';
@@ -804,8 +812,8 @@ function loadQuoteForConfirmation(index){
   // Category
   const sel = document.getElementById('category');
   const stored = (record.category || '').trim();
-  const catKeys = ['cat1','cat2','cat3','cat4','cat5','cat6'];
-  const catValues = ['3998|concrete','6021|concrete','6791|concrete','10837|granite','6791|concrete','10837|granite'];
+  const catKeys = ['cat1','cat2','cat3','cat4','cat5','cat6','cat7'];
+  const catValues = ['3998|concrete','6021|concrete','6791|concrete','10837|granite','6791|concrete','10837|granite','0|none'];
   for(let i = 0; i < catKeys.length; i++){
     if(T.EN[catKeys[i]].trim() === stored){ sel.value = catValues[i]; break; }
   }
@@ -888,8 +896,8 @@ function loadIntoForm(record) {
   // (sheet always stores English text regardless of UI language)
   const sel = document.getElementById('category');
   const stored = (record.category || '').trim();
-  const catKeys = ['cat1','cat2','cat3','cat4','cat5','cat6'];
-  const catValues = ['3998|concrete','6021|concrete','6791|concrete','10837|granite','6791|concrete','10837|granite'];
+  const catKeys = ['cat1','cat2','cat3','cat4','cat5','cat6','cat7'];
+  const catValues = ['3998|concrete','6021|concrete','6791|concrete','10837|granite','6791|concrete','10837|granite','0|none'];
   let matched = false;
   for(let i = 0; i < catKeys.length; i++){
     if(T.EN[catKeys[i]].trim() === stored){
@@ -973,7 +981,7 @@ function getFormData(){
   const cat = document.getElementById('category');
   // Always use English category name for storage — matches Zoho Books items
   const catIndex = cat.selectedIndex;
-  const catKeys = ['','cat1','cat2','cat3','cat4','cat5','cat6'];
+  const catKeys = ['','cat1','cat2','cat3','cat4','cat5','cat6','cat7'];
   const catEN = catIndex > 0 ? T.EN[catKeys[catIndex]] : '';
   // Always use English finish text for storage
   const finType = document.getElementById('finishBar').dataset.finType || '';
