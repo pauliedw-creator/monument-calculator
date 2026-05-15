@@ -176,7 +176,7 @@ input[type=number]{-moz-appearance:textfield}
 .view-toggle{display:flex;gap:4px;margin-left:8px}
 .view-btn{font-family:'DM Sans',sans-serif;font-size:10px;font-weight:500;letter-spacing:.08em;
   border-radius:3px;padding:3px 9px;cursor:pointer;transition:all .15s;border:1px solid #3a3830;
-  background:none;color:#6a6050}
+  background:none;color:#6a6050;-webkit-appearance:none;appearance:none;white-space:nowrap}
 .view-btn.active-co{color:#c9a84c;border-color:#c9a84c;background:rgba(201,168,76,.08)}
 .view-btn.active-cu{color:#5a9ee0;border-color:#5a9ee0;background:rgba(90,158,224,.08)}
 .view-btn:hover:not(.active-co):not(.active-cu){color:#aaa;border-color:#555}
@@ -445,6 +445,7 @@ const T = {
     labelMonumentType:'Monument Type', mTypeDisplay:'Display Monument', mTypeCustom:'Custom Monument',
     labelPaymentMethod:'Payment Method', payCash:'Cash', payTransfer:'Bank Transfer',
     customerBannerText:'Customer view — internal data hidden',
+    viewCompany:'🏢 Company', viewCustomer:'👤 Customer',
     finishConcrete:'Finish: Concrete paving slab or concrete block with concrete kerb',
     finishGranite:'Finish: Granite paths with granite kerb',
     hdrDate:'Date', hdrCustomer:'Customer / Notes', hdrCategory:'Category',
@@ -488,6 +489,7 @@ const T = {
     labelMonumentType:'Typ nagrobka', mTypeDisplay:'Nagrobek katalogowy', mTypeCustom:'Nagrobek niestandardowy',
     labelPaymentMethod:'Metoda płatności', payCash:'Gotówka', payTransfer:'Przelew bankowy',
     customerBannerText:'Widok klienta — dane wewnętrzne ukryte',
+    viewCompany:'🏢 Firma', viewCustomer:'👤 Klient',
     finishConcrete:'Wykończenie: Płyta betonowa lub blok betonowy z obrzeżem betonowym',
     finishGranite:'Wykończenie: Ścieżki granitowe z obrzeżem granitowym',
     hdrDate:'Data', hdrCustomer:'Klient / Uwagi', hdrCategory:'Kategoria',
