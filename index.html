@@ -532,8 +532,6 @@ function setLang(lang) {
     editMode ? T[lang].submitBtnEdit : T[lang].submitBtn;
 
   // Update view toggle labels
-  document.getElementById('btnViewCo').textContent = T[lang].viewCompany;
-  document.getElementById('btnViewCu').textContent = T[lang].viewCustomer;
   document.getElementById('customerBanner').querySelector('[data-i18n="customerBannerText"]').textContent = T[lang].customerBannerText;
   document.getElementById('quoteBtnLabel').textContent = T[lang].quoteBtn;
   // Update submit label respecting current mode
